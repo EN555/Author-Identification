@@ -1,0 +1,6 @@
+pandas
+numpy
+pytorch
+tensorflow
+swifter
+nltk
