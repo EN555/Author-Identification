@@ -1,6 +1,9 @@
+from preprocess import get_data
+
 
 def main():
-    pass
+    df = get_data()
+    # print(df.head())
 
 
 if __name__ == '__main__':
