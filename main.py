@@ -1,11 +1,10 @@
+import pandas as pd
 from preprocess import get_data
-
+import csv
 
 def main():
     df = get_data()
-    df.to_csv("data.csv")
-    print(df.head())
-
+    print(df)
 
 if __name__ == '__main__':
     main()
