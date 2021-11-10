@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import requests
 import validators
-
+from tqdm import tqdm
 
 # def get_data_to_df() -> pd.DataFrame:
 #     """
@@ -42,7 +42,7 @@ def get_data() -> pd.DataFrame:
     # columns = ["Text", "title", "author", "publish"]
     df = pd.DataFrame()
     with open("url_list.json", "r") as url_file:
-        for line in url_file.readlines():
+        for line in tqdm(url_file.readlines()):
             dict_row = json.loads(line)
             series_row = pd.Series()
             try:
@@ -61,8 +61,7 @@ def get_data() -> pd.DataFrame:
                 series_row["publish"] = dict_row["publish"]  # TODO: change to date
                 series_row["genres"] = " ".join(dict_row["genres"]).replace("\n", "").replace(" ", "").replace(
                     "Category:", "").split("»")
-                print(series_row)
-                print(dict_row["txt"])
+                # print(dict_row["txt"])
             except Exception as e:
                 print(dict_row)
                 print(e)
