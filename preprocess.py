@@ -5,7 +5,8 @@ from tqdm import tqdm
 import swifter
 import re
 import csv
-
+import sys
+import vaex
 
 def get_data_to_df() -> pd.DataFrame:
     """
@@ -84,13 +85,35 @@ replace author's names to numebrs
 and drop 3 not important columns 
 """
 def replace_name() ->pd.DataFrame:
-    chunksize = 10 ** 3
-    data = pd.read_csv("data.csv",chunksize= chunksize)
-    data = pd.concat(data)
+    # maxInt = sys.maxsize
+    # while True:
+    #     # decrease the maxInt value by factor 10
+    #     # as long as the OverflowError occurs.
+    #     try:
+    #         csv.field_size_limit(maxInt)
+    #         break
+    #     except OverflowError:
+    #         maxInt = int(maxInt / 10)
+    # mylist = []
+    # for t in pd.read_csv('data.csv',iterator=True, engine='python',chunksize=2000):
+    #         mylist.append(t)
+    # data = pd.concat(mylist, axis=0)
+    data = pd.read_csv('data.csv')
     data.drop(["publish", "genres", "title", "Unnamed: 0"], axis=1, inplace=True)
     values = [i for i in range(0, data["author"].value_counts().sum())]
     key = list(dict.fromkeys(list(data["author"])))  # remove duplicate author's name
     dic_name_id = dict(zip(key, values))
     data["author"] = data["author"].swifter.apply(lambda s: dic_name_id[s])
-    data.to_csv("clean.csv")
+    return data
+
+def func(text):
+    x = text.split(" ")
+    n = 500
+    res = [' '.join(x[i:i + n]) for i in range(0, (len(x) % n) * n, n)] + [' '.join(x[(len(x) % n) * n:len(x)])]
+    return res
+
+def divide_book_to_chucnks(data):
+    data["Text"] = data["Text"].swifter.apply(lambda x: func(x))
+    data = data.explode("Text")
+    data.to_csv("chuncks_data.csv")
     return data
