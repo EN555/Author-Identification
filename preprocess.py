@@ -7,6 +7,7 @@ import re
 import csv
 import sys
 import vaex
+import nltk
 
 def get_data_to_df() -> pd.DataFrame:
     """
@@ -85,19 +86,6 @@ replace author's names to numebrs
 and drop 3 not important columns 
 """
 def replace_name() ->pd.DataFrame:
-    # maxInt = sys.maxsize
-    # while True:
-    #     # decrease the maxInt value by factor 10
-    #     # as long as the OverflowError occurs.
-    #     try:
-    #         csv.field_size_limit(maxInt)
-    #         break
-    #     except OverflowError:
-    #         maxInt = int(maxInt / 10)
-    # mylist = []
-    # for t in pd.read_csv('data.csv',iterator=True, engine='python',chunksize=2000):
-    #         mylist.append(t)
-    # data = pd.concat(mylist, axis=0)
     data = pd.read_csv('data.csv')
     data.drop(["publish", "genres", "title", "Unnamed: 0"], axis=1, inplace=True)
     values = [i for i in range(0, data["author"].value_counts().sum())]
@@ -117,3 +105,14 @@ def divide_book_to_chucnks(data):
     data = data.explode("Text")
     data.to_csv("chuncks_data.csv")
     return data
+
+# average of sentence
+def average_sentence_size(data) ->pd.DataFrame:
+    data["sentence_len"] = data["Text"].swifter\
+        .apply(lambda text: pd.Series(nltk.sent_tokenize(text)).map(lambda sent: len(nltk.word_tokenize(sent))).mean())
+
+# number of time uses comma
+def average_comma_uses(data) ->pd.DataFrame:
+    data["sentence_len"] = data["Text"].swifter\
+        .apply(lambda text: pd.Series(nltk.sent_tokenize(text)).map(lambda sent: pd.Series(sent).value_counts()[","]/len(nltk.word_tokenize(sent))).mean())
+
