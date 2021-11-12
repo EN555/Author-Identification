@@ -3,3 +3,4 @@ books1/
 .ipynb_checkpoints/
 __pycache__/
 data.csv
+vaex
