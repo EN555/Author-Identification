@@ -5,8 +5,6 @@ from tqdm import tqdm
 import swifter
 import re
 import csv
-import sys
-import vaex
 import nltk
 
 
@@ -91,5 +89,20 @@ def average_sentence_size(data) -> pd.DataFrame:
 def average_comma_uses(data) -> pd.DataFrame:
     data["sentence_len"] = data["Text"].swifter \
         .apply(lambda text: pd.Series(nltk.sent_tokenize(text)).map(
-            lambda sent: pd.Series(sent).value_counts()[","] / len(nltk.word_tokenize(sent))).mean())
+        lambda sent: pd.Series(sent).value_counts()[","] / len(nltk.word_tokenize(sent))).mean())
     return data
+
+
+def load_data(path: str) -> pd.DataFrame:
+    rows_list = []
+    _, authors, _ = next(os.walk(path))
+    for author_name in authors:
+        curr_row = {"author_name":author_name}
+        author_path = os.path.join(path, author_name)
+        _, _, books_files = next(os.walk(author_path))
+        for book_name in books_files:
+            curr_row["book_name"] = book_name
+            with open(os.path.join(author_path,book_name),"r") as book:
+                curr_row["book_text"] = book.read()
+            rows_list.append(curr_row.copy())
+    return pd.DataFrame(rows_list)
