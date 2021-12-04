@@ -4,3 +4,4 @@ pytorch
 tensorflow
 swifter
 nltk
+vaex

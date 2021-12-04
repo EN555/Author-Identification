@@ -1,6 +1,4 @@
 .idea/
-books1/
+Data/*
 .ipynb_checkpoints/
 __pycache__/
-data.csv
-vaex
