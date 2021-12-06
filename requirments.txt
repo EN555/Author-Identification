@@ -5,3 +5,4 @@ tensorflow
 swifter
 nltk
 vaex
+scikit-learn
