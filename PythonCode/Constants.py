@@ -1,0 +1,2 @@
+LABEL_NAME = "author"
+REPORT_DIRECTORY_NAME = "Reports"
