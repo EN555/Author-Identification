@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 import pandas as pd
 import swifter
 import nltk
+from nltk.stem import PorterStemmer
+from nltk.tokenize import word_tokenize
 import string
 from typing import List
 from nltk.corpus import stopwords
@@ -114,9 +116,14 @@ class Normalization:
 class FeaturesExtraction:
 
     @staticmethod
+    def __stem_text(text: str):
+        ps = PorterStemmer()
+        return (ps.stem(word) for word in word_tokenize(text))
+
+    @staticmethod
     def get_bag_of_words_vectorizer(x_train: pd.DataFrame, text_column_label: str = 'Text',
                                     min_df: float = 0.01) -> CountVectorizer:
-        vectorizer = CountVectorizer(min_df=min_df)
+        vectorizer = CountVectorizer(min_df=min_df, analyzer=FeaturesExtraction.__stem_text)
         return vectorizer.fit(x_train[text_column_label])
 
     @staticmethod
@@ -176,4 +183,5 @@ class Splitting:
         if test_size >= 1:
             raise ValueError("not valid test size")
         return train_test_split(X, Y, test_size=test_size)
+
 
