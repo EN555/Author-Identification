@@ -11,62 +11,51 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
+from typing import Tuple
 
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 
 
-def preprocess_pipeline(data_path: str, features: List[str], test_size: float = 0.3,
-                        save_to: (str, str, str, str) = None) -> (pd.DataFrame, pd.DataFrame, pd.Series, pd.Series):
-    """
-    return x_train, x_test, y_train, y_test with the wanted features
-    @param data_path:   path to C50/C50train
-    @param features:    list of wanted features. options: ['bag of words', 'simple style]
-    @param test_size:   size of test (validation) set
-    @param save_to:     csv files paths to save the processed data set. if None data is not saved.
-    """
+def simple_style(x_train, x_test,**args) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    x_train = pd.concat(
+        [x_train,
+         FeaturesExtraction.pos_count(x_train, text_column_label='book_text'),
+         FeaturesExtraction.stop_words(x_train, text_column_label='book_text'),
+         FeaturesExtraction.avg_word_len(x_train, text_column_label='book_text'),
+         FeaturesExtraction.avg_sentence_len(x_train, text_column_label='book_text'),
+         FeaturesExtraction.punctuation_marks(x_train, text_column_label='book_text')], axis=1)
+    x_test = pd.concat(
+        [x_test,
+         FeaturesExtraction.pos_count(x_test, text_column_label='book_text'),
+         FeaturesExtraction.stop_words(x_test, text_column_label='book_text'),
+         FeaturesExtraction.avg_word_len(x_test, text_column_label='book_text'),
+         FeaturesExtraction.avg_sentence_len(x_test, text_column_label='book_text'),
+         FeaturesExtraction.punctuation_marks(x_test, text_column_label='book_text')], axis=1)
+    return x_train, x_test
 
-    # load data
+
+def bag_of_words(x_train,x_test,min_df:int,text_column_label):
+    vectorizer = CountVectorizer(min_df=min_df)
+    vectorizer.fit(x_train[text_column_label])
+    x_train = pd.concat([x_train, FeaturesExtraction.bag_of_words(x_train, vectorizer, text_column_label)], axis=1)
+    x_test = pd.concat([x_test, FeaturesExtraction.bag_of_words(x_test, vectorizer, text_column_label)], axis=1)
+    return x_train,x_test
+
+
+def preprocess_pipeline(data_path: str, repesention_handler,normalize:bool, test_size: float = 0.3,save_path="./Data/clean/",text_column_label='book_text',min_df=0.001,cache=True) -> (pd.DataFrame, pd.DataFrame, pd.Series, pd.Series):
+    if cache:
+        pass#TODO
     df = load_data(data_path)
-
-    # X Y split
     X, Y = pd.DataFrame(df['book_text'], columns=['book_text']), df['author_name']
-
-    # train test split
-    x_train, x_test, y_train, y_test = Splitting.train_test_split(X, Y, test_size=test_size)
-
-    # features
-    for feature in features:
-        if feature == 'bag of words':
-            vectorizer = FeaturesExtraction.get_bag_of_words_vectorizer(x_train, text_column_label='book_text')
-            x_train = pd.concat(
-                [x_train, FeaturesExtraction.bag_of_words(x_train, vectorizer, text_column_label='book_text')], axis=1)
-            x_test = pd.concat(
-                [x_test, FeaturesExtraction.bag_of_words(x_test, vectorizer, text_column_label='book_text')], axis=1)
-
-        elif feature == 'simple style':
-            x_train = pd.concat(
-                [x_train,
-                 FeaturesExtraction.pos_count(x_train, text_column_label='book_text'),
-                 FeaturesExtraction.stop_words(x_train, text_column_label='book_text'),
-                 FeaturesExtraction.avg_word_len(x_train, text_column_label='book_text'),
-                 FeaturesExtraction.avg_sentence_len(x_train, text_column_label='book_text'),
-                 FeaturesExtraction.punctuation_marks(x_train, text_column_label='book_text')], axis=1)
-            x_test = pd.concat(
-                [x_test,
-                 FeaturesExtraction.pos_count(x_test, text_column_label='book_text'),
-                 FeaturesExtraction.stop_words(x_test, text_column_label='book_text'),
-                 FeaturesExtraction.avg_word_len(x_test, text_column_label='book_text'),
-                 FeaturesExtraction.avg_sentence_len(x_test, text_column_label='book_text'),
-                 FeaturesExtraction.punctuation_marks(x_test, text_column_label='book_text')], axis=1)
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=test_size)
+    x_train,x_test = repesention_handler(x_train, x_test,min_df,text_column_label)
 
     x_train, x_test = x_train.drop('book_text', axis=1), x_test.drop('book_text', axis=1)
+    if normalize:
+        scaler = Normalization.get_standard_scaler(x_train)
+        x_train, x_test = scaler.transform(x_train), scaler.transform(x_test)
 
-    # normalize
-    scaler = Normalization.get_standard_scaler(x_train)
-    x_train, x_test = scaler.transform(x_train), scaler.transform(x_test)
-
-    # switch labels to numbers
     y_train = pd.factorize(y_train)[0]
     y_test = pd.factorize(y_test)[0]
 
@@ -76,12 +65,10 @@ def preprocess_pipeline(data_path: str, features: List[str], test_size: float = 
     y_train = pd.Series(y_train)
     y_test = pd.Series(y_test)
 
-    # save to files
-    if save_to is not None:
-        x_train.to_csv(save_to[0])
-        x_test.to_csv(save_to[1])
-        y_train.to_csv(save_to[2])
-        y_test.to_csv(save_to[3])
+    x_train.to_csv(os.path.join(data_path,"x_train_clean.csv"))
+    x_test.to_csv(os.path.join(data_path,"x_test_clean.csv"))
+    y_train.to_csv(os.path.join(data_path,"y_train_clean.csv"))
+    y_test.to_csv(os.path.join(data_path,"y_test_clean.csv"))
 
     return x_train, x_test, y_train, y_test
 
@@ -112,12 +99,6 @@ class Normalization:
 
 
 class FeaturesExtraction:
-
-    @staticmethod
-    def get_bag_of_words_vectorizer(x_train: pd.DataFrame, text_column_label: str = 'Text',
-                                    min_df: float = 0.01) -> CountVectorizer:
-        vectorizer = CountVectorizer(min_df=min_df)
-        return vectorizer.fit(x_train[text_column_label])
 
     @staticmethod
     def bag_of_words(X: pd.DataFrame, vectorizer: CountVectorizer, text_column_label: str = 'Text') -> pd.DataFrame:
@@ -169,11 +150,8 @@ class FeaturesExtraction:
         return features
 
 
-class Splitting:
-    @staticmethod
-    def train_test_split(X: pd.DataFrame, Y: pd.Series, test_size: float) -> (
-            pd.DataFrame, pd.DataFrame, pd.Series, pd.Series):
-        if test_size >= 1:
-            raise ValueError("not valid test size")
-        return train_test_split(X, Y, test_size=test_size)
 
+
+res = preprocess_pipeline("../Data/C50/C50train/", bag_of_words, )
+
+print(res[0])
