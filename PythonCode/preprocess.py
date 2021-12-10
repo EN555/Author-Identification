@@ -1,9 +1,12 @@
 import os
+import sys
 from abc import ABC, abstractmethod
 
 import pandas as pd
 import swifter
 import nltk
+from nltk.stem import PorterStemmer
+from nltk.tokenize import word_tokenize
 import string
 from typing import List
 from nltk.corpus import stopwords
@@ -101,6 +104,17 @@ class Normalization:
 class FeaturesExtraction:
 
     @staticmethod
+    def __stem_text(text: str):
+        ps = PorterStemmer()
+        return (ps.stem(word) for word in word_tokenize(text))
+
+    @staticmethod
+    def get_bag_of_words_vectorizer(x_train: pd.DataFrame, text_column_label: str = 'Text',
+                                    min_df: float = 0.01) -> CountVectorizer:
+        vectorizer = CountVectorizer(min_df=min_df, analyzer=FeaturesExtraction.__stem_text)
+        return vectorizer.fit(x_train[text_column_label])
+
+    @staticmethod
     def bag_of_words(X: pd.DataFrame, vectorizer: CountVectorizer, text_column_label: str = 'Text') -> pd.DataFrame:
         data = vectorizer.transform(X[text_column_label]).toarray()
         return pd.DataFrame(data=data, columns=vectorizer.get_feature_names_out())
@@ -150,8 +164,3 @@ class FeaturesExtraction:
         return features
 
 
-
-
-res = preprocess_pipeline("../Data/C50/C50train/", bag_of_words, )
-
-print(res[0])
