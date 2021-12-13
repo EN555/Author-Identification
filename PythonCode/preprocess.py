@@ -11,6 +11,7 @@ import string
 from typing import List
 from nltk.corpus import stopwords
 from sklearn.preprocessing import StandardScaler
+from itertools import islice
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
@@ -66,8 +67,8 @@ def preprocess_pipeline(data_path: str, features: List[str], test_size: float = 
     x_train, x_test = x_train.drop('book_text', axis=1), x_test.drop('book_text', axis=1)
 
     # normalize
-    scaler = Normalization.get_standard_scaler(x_train)
-    x_train, x_test = scaler.transform(x_train), scaler.transform(x_test)
+    # scaler = Normalization.get_standard_scaler(x_train)
+    # x_train, x_test = scaler.transform(x_train), scaler.transform(x_test)
 
     # switch labels to numbers
     y_train = pd.factorize(y_train)[0]
@@ -92,7 +93,7 @@ def preprocess_pipeline(data_path: str, features: List[str], test_size: float = 
 def load_data(path: str) -> pd.DataFrame:
     rows_list = []
     _, authors, _ = next(os.walk(path))
-    for author_name in authors:
+    for author_name in islice(authors,2):
         curr_row = {"author_name": author_name}
         author_path = os.path.join(path, author_name)
         _, _, books_files = next(os.walk(author_path))
@@ -123,8 +124,8 @@ class FeaturesExtraction:
 
     @staticmethod
     def get_bag_of_words_vectorizer(x_train: pd.DataFrame, text_column_label: str = 'Text',
-                                    min_df: float = 0.01) -> CountVectorizer:
-        vectorizer = CountVectorizer(min_df=min_df, analyzer=FeaturesExtraction.__stem_text)
+                                    min_df: float = 0.1) -> CountVectorizer:
+        vectorizer = CountVectorizer(min_df=min_df, analyzer=FeaturesExtraction.__stem_text, stop_words='english', lowercase=True)
         return vectorizer.fit(x_train[text_column_label])
 
     @staticmethod
