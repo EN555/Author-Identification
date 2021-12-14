@@ -59,14 +59,21 @@ class Model(ABC):
                 self.train(x_train, y_train, **kwargs)
                 prediction = self.predict(x_test)
 
-        class_report = classification_report(y_test, prediction)
-        print(class_report)
-        with open(os.path.join(dir_name, "classification_report.txt"), "w") as file:
-            file.write(class_report)
+        # class_report = classification_report(y_test, prediction)
+        # print(class_report)
+        # with open(os.path.join(dir_name, "classification_report.txt"), "w") as file:
+        #     file.write(class_report)
+        # save as fig the confusion matrix
         mat = confusion_matrix(y_test, prediction)
         plt.figure(figsize=(10, 7))
         sns.heatmap(mat, annot=True)
         plt.savefig(os.path.join(dir_name, "confusion_matrix.png"))
+        plt.draw()
+        # save as fig the classification report
+        plt.figure(figsize=(10, 7))
+        clf_report = classification_report(y_test, prediction, target_names=["AaronPressman", "AlanCrosby"], output_dict=True)
+        sns.heatmap(pd.DataFrame(clf_report).iloc[:-1, :-2].T, annot=True)
+        plt.savefig(os.path.join(dir_name, "classification report.png"))
         plt.draw()
         loss_values = self.get_loss()
         if loss_values is not None:
