@@ -64,9 +64,15 @@ class Model(ABC):
         # with open(os.path.join(dir_name, "classification_report.txt"), "w") as file:
         #     file.write(class_report)
         # save as fig the confusion matrix
+        ax = plt.subplot()
         mat = confusion_matrix(y_test, prediction)
         plt.figure(figsize=(10, 7))
-        sns.heatmap(mat, annot=True)
+        sns.heatmap(mat, annot=True, ax=ax)
+        ax.set_xlabel('Predicted labels');
+        ax.set_ylabel('True labels');
+        ax.set_title('Confusion Matrix');
+        ax.xaxis.set_ticklabels(["AaronPressman", "AlanCrosby"])
+        ax.yaxis.set_ticklabels(["AaronPressman", "AlanCrosby"])
         plt.savefig(os.path.join(dir_name, "confusion_matrix.png"))
         plt.draw()
         # save as fig the classification report
