@@ -1,41 +1,10 @@
 import os
 import pandas as pd
-import swifter
-import nltk
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import CountVectorizer
-from PythonCode.preprocess.FeatureExtraction import FeaturesExtraction
 from PythonCode.Constants import *
 from pathlib import Path
 from itertools import islice
-
-nltk.download('punkt')
-nltk.download('averaged_perceptron_tagger')
-
-
-def simple_style_helper(x) -> pd.DataFrame:
-    x = pd.concat(
-        [FeaturesExtraction.pos_count(x),
-         FeaturesExtraction.stop_words(x),
-         FeaturesExtraction.avg_word_len(x),
-         FeaturesExtraction.avg_sentence_len(x),
-         FeaturesExtraction.punctuation_marks(x)], axis=1)
-    return x
-
-
-def simple_style_handler(x_train, x_test, *args, **kwargs):
-    return simple_style_helper(x_train), simple_style_helper(x_test)
-
-
-def bag_of_words(x_train, x_test, *args, **kwargs):
-    vectorizer = CountVectorizer(**kwargs)
-    vectorizer.fit(x_train[TEXT_COLUMN_LABEL])
-    x_train = pd.DataFrame(columns=vectorizer.get_feature_names(),
-                           data=vectorizer.transform(x_train[TEXT_COLUMN_LABEL]).toarray())
-    x_test = pd.DataFrame(columns=vectorizer.get_feature_names(),
-                          data=vectorizer.transform(x_test[TEXT_COLUMN_LABEL]).toarray())
-    return x_train, x_test
 
 
 def filter_for_base_case():
