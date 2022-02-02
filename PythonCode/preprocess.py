@@ -62,6 +62,7 @@ def preprocess_pipeline(data_path: str, features: List[str], test_size: float = 
                  FeaturesExtraction.avg_sentence_len(x_test, text_column_label='book_text'),
                  FeaturesExtraction.punctuation_marks(x_test, text_column_label='book_text')], axis=1)
 
+
     x_train, x_test = x_train.drop('book_text', axis=1), x_test.drop('book_text', axis=1)
 
     # normalize
@@ -77,6 +78,9 @@ def preprocess_pipeline(data_path: str, features: List[str], test_size: float = 
     x_test = pd.DataFrame(x_test)
     y_train = pd.Series(y_train)
     y_test = pd.Series(y_test)
+
+    x_train.dropna()
+    x_test.dropna()
 
     # save to files
     if save_to is not None:
@@ -185,3 +189,4 @@ class Splitting:
         return train_test_split(X, Y, test_size=test_size)
 
 
+_,_,_,_ = preprocess_pipeline('../C50/C50train', ['bag of words'])
