@@ -1,5 +1,3 @@
-from nltk.stem import PorterStemmer
-from nltk.tokenize import word_tokenize
 import string
 from nltk.corpus import stopwords
 import pandas as pd
