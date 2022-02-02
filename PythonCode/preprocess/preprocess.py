@@ -7,15 +7,8 @@ from pathlib import Path
 from itertools import islice
 
 
-def filter_for_base_case():
-    """
-    filter two authors
-    """
-    pass
-
-
 # can be passed to pipeline using data_filter parameter
-def chunking(df: pd.Dataset, chunk_size: int) -> pd.Dataset:
+def chunking(df: pd.DataFrame, chunk_size: int = 100) -> pd.DataFrame:
     """
     split each entry into shorter texts
     @param chunk_size: number of words in eac new entry
@@ -23,7 +16,7 @@ def chunking(df: pd.Dataset, chunk_size: int) -> pd.Dataset:
     rows = []
     for _, row in df.iterrows():
         words = row[TEXT_COLUMN_LABEL].split(' ')
-        chunks = [' '.join(words[i, i + chunk_size]) for i in range(0, len(words), chunk_size)]
+        chunks = [' '.join(words[i: i + chunk_size]) for i in range(0, len(words), chunk_size)]
         for chunk in chunks:
             tmp_row = row.copy()
             tmp_row[TEXT_COLUMN_LABEL] = chunk

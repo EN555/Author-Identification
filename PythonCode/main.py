@@ -1,7 +1,7 @@
-from preprocess import *
-
+from preprocess.preprocess import *
+from preprocess.simpleStyleFeatures import *
+from preprocess.contentFeatures import *
 
 
 if __name__ == '__main__':
-    preprocess_pipeline("../Data/C50train/", "bag of words", 0.3,
-                        ("x_train_2.csv", "x_test_2.csv", "y_train_2.csv", "y_test_2.csv"))
+    preprocess_pipeline("../C50/C50train/", 2, aggregative_word2vec, False, data_filter=chunking, word2vec_path='../../GoogleNews-vectors-negative300.bin.gz',  embedding_size=300, aggregative_function=np.sum)

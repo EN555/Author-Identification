@@ -3,9 +3,13 @@ from nltk.corpus import stopwords
 import pandas as pd
 from PythonCode.Constants import *
 import nltk
+import swifter
 
 
 def simple_style_features_extraction(x_train: pd.DataFrame, x_test: pd.DataFrame, text_column_label: str = TEXT_COLUMN_LABEL) -> (pd.DataFrame, pd.DataFrame):
+    """
+    @return: a representation of the data using simple stylistic features defined in this file
+    """
     def simple_style_features_extraction_helper(x: pd.DataFrame) -> pd.DataFrame:
         x = pd.concat(
             [pos_count(x, text_column_label),
@@ -34,14 +38,14 @@ def avg_sentence_len(df: pd.DataFrame, text_column_label: str = TEXT_COLUMN_LABE
 def punctuation_marks_count(df: pd.DataFrame, text_column_label: str = TEXT_COLUMN_LABEL) -> pd.DataFrame:
     to_return = pd.DataFrame()
     for mark in list(string.punctuation):
-        to_return[mark] = df[text_column_label].astype(str).apply(lambda s: s.count(mark) / len(s))
+        to_return[mark] = df[text_column_label].astype(str).swifter.apply(lambda s: s.count(mark) / len(s))
     return to_return
 
 
 def stop_words_count(df: pd.DataFrame, text_column_label: str = TEXT_COLUMN_LABEL) -> pd.DataFrame:
     to_return = pd.DataFrame()
     for word in list(stopwords.words('english')):
-        to_return[word] = df[text_column_label].astype(str).apply(lambda s: s.count(word) / len(nltk.word_tokenize(s)))
+        to_return[word] = df[text_column_label].astype(str).swifter.apply(lambda s: s.count(word) / len(nltk.word_tokenize(s)))
     return to_return
 
 
