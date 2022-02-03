@@ -46,6 +46,10 @@ def preprocess_pipeline(data_path: str, number_of_authors: int, repesention_hand
     x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=test_size, random_state=random_state)
     x_train, x_test = repesention_handler(x_train, x_test, **kwargs)
 
+    # remove too large values
+    x_train[x_train > 2**60] = 2**60
+    x_test[x_test > 2**60] = 2**60
+
     if normalize:
         scaler.fit(x_train)
         x_train, x_test = scaler.transform(x_train), scaler.transform(x_test)
