@@ -9,18 +9,19 @@ from gensim import models
 import swifter
 
 
-def stem_words(text: str) -> List[str]:
-    """
-    @return: a list of the words in the given text, lemmitazed
-    """
-    # convert to wordnet system for pos tagging
-    penn2wn = {'NN': wn.NOUN, 'NNS': wn.NOUN, 'NNP': wn.NOUN, 'NNPS': wn.NOUN,
+# convert to wordnet system for pos tagging
+PENN2WN = {'NN': wn.NOUN, 'NNS': wn.NOUN, 'NNP': wn.NOUN, 'NNPS': wn.NOUN,
                'VB': wn.VERB, 'VBD': wn.VERB, 'VBG': wn.VERB, 'VBN': wn.VERB, 'VBP': wn.VERB, 'VBZ': wn.VERB,
                'RB': wn.ADV, 'RBR': wn.ADV, 'RBS': wn.ADV,
                'JJ': wn.ADJ, 'JJR': wn.ADJ, 'JJS': wn.ADJ}
 
+
+def stem_words(text: str) -> List[str]:
+    """
+    @return: a list of the words in the given text, lemmitazed
+    """
     lemmatizer = nltk.WordNetLemmatizer()
-    return [lemmatizer.lemmatize(word, penn2wn.get(pos, wn.NOUN)) for word, pos in
+    return [lemmatizer.lemmatize(word, PENN2WN.get(pos, wn.NOUN)) for word, pos in
             nltk.pos_tag(nltk.word_tokenize(text))]
 
 
