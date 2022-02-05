@@ -8,6 +8,7 @@ from PythonCode.Constants import *
 from pathlib import Path
 from itertools import islice
 
+
 # can be passed to pipeline using data_filter parameter
 
 
@@ -32,6 +33,7 @@ def num_sentences_based_chucking(df: pd.DataFrame, chunk_size: int):
         tmp_row = row.copy()
         tmp_row[TEXT_COLUMN_LABEL] = "".join(curr_chunk)
         return tmp_row.copy()
+
     rows = []
     for _, row in df.iterrows():
         sentences = nltk.tokenize.sent_tokenize(row[TEXT_COLUMN_LABEL])
@@ -39,13 +41,14 @@ def num_sentences_based_chucking(df: pd.DataFrame, chunk_size: int):
         for sentence in sentences:
             curr_chunk.append(sentence)
             if len(curr_chunk) == chunk_size:
-                rows.append(create_chunk(curr_chunk, row))
+                rows.append(create_chunk(curr_chunk.copy(), row))
                 curr_chunk = []
         rows.append(create_chunk(curr_chunk, row))  # add the last one
     return pd.DataFrame(rows)
 
 
-def combine_features(feature_extractors: list,x_train: pd.DataFrame, x_test: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
+def combine_features(feature_extractors: list, x_train: pd.DataFrame, x_test: pd.DataFrame) -> (
+pd.DataFrame, pd.DataFrame):
     """
     @param feature_extractors list of feature extractor callback like complex_style_features_extraction
     """
@@ -59,7 +62,8 @@ def combine_features(feature_extractors: list,x_train: pd.DataFrame, x_test: pd.
 
 def preprocess_pipeline(data_path: str, number_of_authors: int, repesention_handler, normalize: bool,
                         scaler=StandardScaler(), test_size: float = 0.3, random_state=1,
-                        save_path="../../Data/clean/", data_filter=None, cache=False, **kwargs) -> (
+                        save_path="../../Data/clean/", data_filter=None, cache=False, std_thr: float = 0.3,
+                        **kwargs) -> (
         pd.DataFrame, pd.DataFrame, pd.Series, pd.Series):
     if cache:
         return pd.read_csv(os.path.join(data_path, "x_train_clean.csv")), \
@@ -90,7 +94,9 @@ def preprocess_pipeline(data_path: str, number_of_authors: int, repesention_hand
 
     # turn to correct format
     x_train = pd.DataFrame(x_train)
+    x_train = x_train.loc[:, x_train.std() > std_thr]
     x_test = pd.DataFrame(x_test)
+    x_test = x_test.loc[:, x_test.std() > std_thr]
     y_train = pd.Series(y_train)
     y_test = pd.Series(y_test)
 
@@ -117,4 +123,3 @@ def load_data(path: str, number_of_authors: int) -> pd.DataFrame:
                 curr_row[TEXT_COLUMN_LABEL] = book.read()
             rows_list.append(curr_row.copy())
     return pd.DataFrame(rows_list)
-

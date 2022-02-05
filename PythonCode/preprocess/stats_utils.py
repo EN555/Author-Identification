@@ -4,6 +4,8 @@ from matplotlib import pyplot as plt
 from wordcloud import WordCloud
 from PythonCode.Constants import TEXT_COLUMN_LABEL
 import seaborn as sns
+import math
+from tqdm import tqdm
 
 
 def basic_stats(df):
@@ -22,8 +24,10 @@ def basic_stats(df):
 
 def plot_feature_dist(data: pd.DataFrame, num_in_row: int = 3):
     columns = data.columns
-    fig, axs = plt.subplots(len(columns) // num_in_row + 1, num_in_row, figsize=(20, 20))
+    fig, axs = plt.subplots(math.ceil(len(columns) / num_in_row), num_in_row, figsize=(20, 20))
     fig.suptitle('Features Distribution')
-    for i, col_name in enumerate(columns):
-        # ax=axs[i//NUM_IN_ROW,i%NUM_IN_ROW]
-        sns.displot(data=data, x=col_name, kind="hist", aspect=2)
+    for i, col_name in tqdm(enumerate(columns)):
+        try:
+            sns.histplot(x=data[col_name], ax=axs[i // num_in_row, i % num_in_row])
+        except Exception as e:
+            print(e)
