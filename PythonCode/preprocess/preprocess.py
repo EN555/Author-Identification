@@ -1,4 +1,6 @@
 import os
+
+import nltk.tokenize
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
@@ -6,8 +8,9 @@ from PythonCode.Constants import *
 from pathlib import Path
 from itertools import islice
 
-
 # can be passed to pipeline using data_filter parameter
+
+
 def chunking(df: pd.DataFrame, chunk_size: int = 100) -> pd.DataFrame:
     """
     split each entry into shorter texts
@@ -24,13 +27,41 @@ def chunking(df: pd.DataFrame, chunk_size: int = 100) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def num_sentences_based_chucking(df: pd.DataFrame, chunk_size: int):
+    def create_chunk(curr_chunk, row):
+        tmp_row = row.copy()
+        tmp_row[TEXT_COLUMN_LABEL] = "".join(curr_chunk)
+        return tmp_row.copy()
+    rows = []
+    for _, row in df.iterrows():
+        sentences = nltk.tokenize.sent_tokenize(row[TEXT_COLUMN_LABEL])
+        curr_chunk = []
+        for sentence in sentences:
+            curr_chunk.append(sentence)
+            if len(curr_chunk) == chunk_size:
+                rows.append(create_chunk(curr_chunk, row))
+                curr_chunk = []
+        rows.append(create_chunk(curr_chunk, row))  # add the last one
+    return pd.DataFrame(rows)
+
+
+def combine_features(x_train: pd.DataFrame, x_test: pd.DataFrame, feature_extractors: list) -> (pd.DataFrame, pd.DataFrame):
+    """
+    @param feature_extractors list of feature extractor callback like complex_style_features_extraction
+    """
+    train_results, test_results = [], []
+    for feature_extractor in feature_extractors:
+        out_train, out_test = feature_extractor(x_train, x_test)
+        train_results.append(out_train)
+        test_results.append(out_test)
+    return pd.concat(train_results, axis=1), pd.concat(test_results, axis=1)
+
+
 def preprocess_pipeline(data_path: str, number_of_authors: int, repesention_handler, normalize: bool,
                         scaler=StandardScaler(), test_size: float = 0.3, random_state=1,
                         save_path="../../Data/clean/", data_filter=None, cache=False, **kwargs) -> (
         pd.DataFrame, pd.DataFrame, pd.Series, pd.Series):
-
     if cache:
-        # TODO: extract y_test_clean...
         return pd.read_csv(os.path.join(data_path, "x_train_clean.csv")), \
                pd.read_csv(os.path.join(data_path, "x_test_clean.csv")), \
                pd.read_csv(os.path.join(data_path, "y_train_clean.csv")), \
@@ -47,8 +78,8 @@ def preprocess_pipeline(data_path: str, number_of_authors: int, repesention_hand
     x_train, x_test = repesention_handler(x_train, x_test, **kwargs)
 
     # remove too large values
-    x_train[x_train > 2**60] = 2**60
-    x_test[x_test > 2**60] = 2**60
+    x_train[x_train > 2 ** 60] = 2 ** 60
+    x_test[x_test > 2 ** 60] = 2 ** 60
 
     if normalize:
         scaler.fit(x_train)
@@ -86,3 +117,4 @@ def load_data(path: str, number_of_authors: int) -> pd.DataFrame:
                 curr_row[TEXT_COLUMN_LABEL] = book.read()
             rows_list.append(curr_row.copy())
     return pd.DataFrame(rows_list)
+

@@ -3,8 +3,5 @@ Data/*
 .ipynb_checkpoints/
 __pycache__/
 *Reports/
-<<<<<<< HEAD
 C50/
-=======
 *.csv
->>>>>>> a0a392f907b843e69c52e49c758ea822bfcc7ec7
