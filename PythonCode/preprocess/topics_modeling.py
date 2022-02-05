@@ -1,3 +1,5 @@
+import pandas as pd
+
 from PythonCode.preprocess.simpleStyleFeatures import *
 import gensim
 from gensim.utils import simple_preprocess
@@ -10,10 +12,11 @@ from typing import List, Tuple
 
 nltk.download('stopwords')
 stop_words = stopwords.words('english')
+additional_ignore_words = ["said"]
 
 
 def default_preprocess(df) -> (corpora.Dictionary, List[List[Tuple[int, int]]]):
-    ignore_words = stop_words + ["said"]
+    ignore_words = stop_words + additional_ignore_words
 
     def sent_to_words(sentences):
         for sentence in sentences:
@@ -29,12 +32,19 @@ def default_preprocess(df) -> (corpora.Dictionary, List[List[Tuple[int, int]]]):
     return id2word, [id2word.doc2bow(text) for text in data_words]
 
 
-def topic_modeling(df: pd.DataFrame, num_topics: int = 5):
-    id2word, corpus = default_preprocess(df)
+def post_process(topics):
+    col_res = []
+    for i, topic in enumerate(topics):
+        col_res.append(max(topic, key=lambda item: item[1])[0])
+    return pd.Series(col_res)
+
+
+def topic_modeling(x_train: pd.DataFrame, x_test: pd.DataFrame, num_topics: int = 5) -> (pd.Series, pd.Series):
+    id2word, corpus = default_preprocess(x_train)
     lda_model = gensim.models.LdaMulticore(corpus=corpus, id2word=id2word, num_topics=num_topics)
     pprint(lda_model.print_topics())
     pyLDAvis.enable_notebook()
     LDAvis_prepared = pyLDAvis.gensim.prepare(lda_model, corpus, id2word)
     pyLDAvis.save_html(LDAvis_prepared, f'./ldavis_prepared_{str(num_topics)}.html')
     print(LDAvis_prepared)
-
+    return post_process(lda_model[corpus]), post_process(lda_model[default_preprocess(x_test)[1]])

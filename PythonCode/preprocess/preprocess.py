@@ -45,7 +45,7 @@ def num_sentences_based_chucking(df: pd.DataFrame, chunk_size: int):
     return pd.DataFrame(rows)
 
 
-def combine_features(x_train: pd.DataFrame, x_test: pd.DataFrame, feature_extractors: list) -> (pd.DataFrame, pd.DataFrame):
+def combine_features(feature_extractors: list,x_train: pd.DataFrame, x_test: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):
     """
     @param feature_extractors list of feature extractor callback like complex_style_features_extraction
     """
