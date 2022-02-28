@@ -6,10 +6,12 @@ import nltk
 import swifter
 
 
-def simple_style_features_extraction(x_train: pd.DataFrame, x_test: pd.DataFrame, text_column_label: str = TEXT_COLUMN_LABEL) -> (pd.DataFrame, pd.DataFrame):
+def simple_style_features_extraction(x_train: pd.DataFrame, x_test: pd.DataFrame,
+                                     text_column_label: str = TEXT_COLUMN_LABEL) -> (pd.DataFrame, pd.DataFrame):
     """
     @return: a representation of the data using simple stylistic features defined in this file
     """
+
     def simple_style_features_extraction_helper(x: pd.DataFrame) -> pd.DataFrame:
         x = pd.concat(
             [pos_count(x, text_column_label),
@@ -18,6 +20,7 @@ def simple_style_features_extraction(x_train: pd.DataFrame, x_test: pd.DataFrame
              avg_sentence_len(x, text_column_label),
              punctuation_marks_count(x, text_column_label)], axis=1)
         return x
+
     return simple_style_features_extraction_helper(x_train), simple_style_features_extraction_helper(x_test)
 
 
@@ -43,9 +46,13 @@ def punctuation_marks_count(df: pd.DataFrame, text_column_label: str = TEXT_COLU
 
 
 def stop_words_count(df: pd.DataFrame, text_column_label: str = TEXT_COLUMN_LABEL) -> pd.DataFrame:
+    def helper(text: str, curr_word: str):
+        words = nltk.word_tokenize(text)
+        return words.count(curr_word) / len(words)
+
     to_return = pd.DataFrame()
     for word in list(stopwords.words('english')):
-        to_return[word] = df[text_column_label].astype(str).swifter.apply(lambda s: s.count(word) / len(nltk.word_tokenize(s)))
+        to_return[word] = df[text_column_label].astype(str).swifter.apply(lambda s: helper(s,word))
     return to_return
 
 
@@ -59,7 +66,7 @@ def pos_count(df: pd.DataFrame, text_column_label: str = TEXT_COLUMN_LABEL) -> p
         return None
 
     features = df[text_column_label].astype(str).swifter.apply(
-        lambda s: pd.Series([x[1] for x in nltk.pos_tag(nltk.word_tokenize(s))]).
+        lambda s: pd.Series([x[1] for x in nltk.pos_tag(nltk.word_tokenize(s))], dtype=str).
             apply(group_pos).value_counts(normalize=True).copy())
     features = features.fillna(0)
     return features

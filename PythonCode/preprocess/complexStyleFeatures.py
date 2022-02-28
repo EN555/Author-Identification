@@ -71,7 +71,7 @@ def hapax_disLegemena(x: pd.DataFrame) -> pd.DataFrame:
         words = nltk.word_tokenize(text)
         words_count = Counter(words)
         v2 = len([_ for _, count in words_count.items() if count == 2])
-        return pd.Series((v2 / len(words), v2 / len(set(words))))
+        return pd.Series((v2 / (len(words) + EPSILON), v2 / (len(set(words))+EPSILON)))
 
     return pd.DataFrame(x[TEXT_COLUMN_LABEL].astype(str).swifter.apply(get_hapax_disLegemena)).set_axis(['hapax_disLegemena(H)', 'hapax_disLegemena(S)'], axis=1)
 
@@ -88,7 +88,7 @@ def Yules_characteristic(x: pd.DataFrame) -> pd.DataFrame:
         words_count = Counter(words)
         freq_count = Counter(words_count.values())
         M = np.sum([(i * i) * freq_count[i] for i in words_count.values()])
-        N = len(words)
+        N = len(words)+EPSILON
         return 10000 * (M - N) / N**2
 
     return pd.DataFrame(x[TEXT_COLUMN_LABEL].astype(str).swifter.apply(get_Yules_characteristic).rename('Yules_characteristic'))
@@ -121,7 +121,7 @@ def brunets_measure(x: pd.DataFrame) -> pd.DataFrame:
         words = nltk.word_tokenize(text)
         a = 0.17
         V = len(set(words))
-        N = len(words)
+        N = len(words)+EPSILON
         return (V - a) / (np.log(N))
 
     return pd.DataFrame(x[TEXT_COLUMN_LABEL].astype(str).swifter.apply(get_brunets_measure).rename('brunets_measure'))
@@ -149,7 +149,7 @@ def entropy_over_words_frequencies(x: pd.DataFrame) -> pd.DataFrame:
     def get_entropy(text: str) -> float:
         words = nltk.word_tokenize(text)
         words_count = Counter(words)
-        distribution = np.array(list(words_count.values())) / len(words)
+        distribution = np.array(list(words_count.values())) / (len(words) + EPSILON)
         return entropy(distribution, base=2)
 
     return pd.DataFrame(x[TEXT_COLUMN_LABEL].astype(str).swifter.apply(get_entropy).rename('entropy'))
@@ -183,8 +183,8 @@ def flesch_reading_ease_flesch_kincaid_grade_level(x: pd.DataFrame) -> pd.DataFr
         words = nltk.word_tokenize(text)
         sentences = nltk.sent_tokenize(text)
         syllable_count = np.sum([__syllable_count(word) for word in words])
-        flesch = 206.835 - 1.015 * (len(words) / len(sentences)) - 84.6 * (syllable_count / len(words))
-        flesch_kincaid = 0.39 * (len(words) / len(sentences)) + 11.8 * (syllable_count / len(words)) - 15.59
+        flesch = 206.835 - 1.015 * (len(words) / (len(sentences) + EPSILON)) - 84.6 * (syllable_count / (len(words) + EPSILON))
+        flesch_kincaid = 0.39 * (len(words) / (len(sentences) + EPSILON)) + 11.8 * (syllable_count / (len(words) +EPSILON)) - 15.59
         return pd.Series((flesch, flesch_kincaid))
 
     return pd.DataFrame(x[TEXT_COLUMN_LABEL].astype(str).swifter.apply(get_flesch_reading_ease_flesch_kincaid_grade_level)).set_axis(['flesch', 'flesch_kincaid'], axis=1)
@@ -198,6 +198,6 @@ def gunning_fog_index(x: pd.DataFrame) -> pd.DataFrame:
         words = stem_words(text)
         sentences = nltk.sent_tokenize(text)
         complex_words = [word for word in words if __syllable_count(word) >= 3]
-        return 0.4*((len(words) / len(sentences)) + 100*(len(complex_words) / len(words)))
+        return 0.4*((len(words) / (len(sentences) + EPSILON)) + 100*(len(complex_words) / (len(words) + EPSILON)))
 
     return pd.DataFrame(x[TEXT_COLUMN_LABEL].astype(str).swifter.apply(get_gunning_fog_index).rename('gunning_fog_index'))

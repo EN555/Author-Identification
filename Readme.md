@@ -2,7 +2,7 @@
 
 ## Installation
 
-```python
+```cmd
 pip install -r requiremnets.txt
 ```
 

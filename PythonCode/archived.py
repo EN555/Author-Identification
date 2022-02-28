@@ -7,6 +7,7 @@ import re
 import csv
 import nltk
 
+
 def get_data() -> pd.DataFrame:
     # columns = ["Text", "title", "author", "publish"]
     data_path = "./books1/epubtxt"
@@ -60,20 +61,6 @@ def replace_name() -> pd.DataFrame:
     key = list(dict.fromkeys(list(data["author"])))  # remove duplicate author's name
     dic_name_id = dict(zip(key, values))
     data["author"] = data["author"].swifter.apply(lambda s: dic_name_id[s])
-    return data
-
-
-def func(text):
-    x = text.split(" ")
-    n = 500
-    res = [' '.join(x[i:i + n]) for i in range(0, (len(x) % n) * n, n)] + [' '.join(x[(len(x) % n) * n:len(x)])]
-    return res
-
-
-def divide_book_to_chucnks(data):
-    data["Text"] = data["Text"].swifter.apply(lambda x: func(x))
-    data = data.explode("Text")
-    data.to_csv("chuncks_data.csv")
     return data
 
 
