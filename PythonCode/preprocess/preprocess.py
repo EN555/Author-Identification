@@ -66,10 +66,10 @@ def preprocess_pipeline(data_path: str, number_of_authors: int, repesention_hand
                         **kwargs) -> (
         pd.DataFrame, pd.DataFrame, pd.Series, pd.Series):
     if cache:
-        return pd.read_csv(os.path.join(data_path, "x_train_clean.csv")), \
-               pd.read_csv(os.path.join(data_path, "x_test_clean.csv")), \
-               pd.read_csv(os.path.join(data_path, "y_train_clean.csv")), \
-               pd.read_csv(os.path.join(data_path, "y_test_clean.csv"))
+        return pd.read_csv(os.path.join(save_path, "x_train_clean.csv")), \
+               pd.read_csv(os.path.join(save_path, "x_test_clean.csv")), \
+               pd.read_csv(os.path.join(save_path, "y_train_clean.csv")), \
+               pd.read_csv(os.path.join(save_path, "y_test_clean.csv"))
 
     df = load_data(data_path, number_of_authors)  # train and validation
 
