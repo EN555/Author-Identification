@@ -15,7 +15,7 @@ from itertools import islice
 def chunking(df: pd.DataFrame, chunk_size: int = 100) -> pd.DataFrame:
     """
     split each entry into shorter texts
-    @param chunk_size: number of words in eac new entry
+    @param chunk_size: number of words in each new entry
     """
     rows = []
     for _, row in df.iterrows():
@@ -57,7 +57,8 @@ pd.DataFrame, pd.DataFrame):
         out_train, out_test = feature_extractor(x_train, x_test)
         train_results.append(out_train)
         test_results.append(out_test)
-    return pd.concat(train_results, axis=1), pd.concat(test_results, axis=1)
+    return pd.concat([df.reset_index(drop=True) for df in train_results], axis=1), \
+           pd.concat([df.reset_index(drop=True) for df in test_results], axis=1)
 
 
 def preprocess_pipeline(data_path: str, number_of_authors: int, repesention_handler, normalize: bool,
@@ -94,11 +95,15 @@ def preprocess_pipeline(data_path: str, number_of_authors: int, repesention_hand
 
     # turn to correct format
     x_train = pd.DataFrame(x_train)
-    x_train = x_train.loc[:, x_train.std() > std_thr]
     x_test = pd.DataFrame(x_test)
-    x_test = x_test.loc[:, x_test.std() > std_thr]
     y_train = pd.Series(y_train)
     y_test = pd.Series(y_test)
+
+    # remove low variance features
+    keep_indexes = x_train.std() > std_thr
+    x_train = x_train.loc[:, keep_indexes]
+    x_test = x_test.loc[:, keep_indexes]
+
 
     if save_path is not None:
         Path(save_path).mkdir(parents=True, exist_ok=True)
