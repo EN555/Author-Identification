@@ -5,10 +5,11 @@ import gensim.downloader
 import gensim
 import re
 from typing import Optional
+
 from PythonCode.preprocess.preprocess import load_data
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.layers import Dense, GRU, AvgPool2D
-from tensorflow.keras.models import Sequential
+from keras.layers import Dense, GRU, AvgPool1D
+from keras.models import Sequential
 
 lemmatizer = nltk.stem.WordNetLemmatizer()
 stemmer = nltk.stem.PorterStemmer()
@@ -136,11 +137,11 @@ def article_level_preprocess(df: pd.DataFrame):
 
 def model_sentence_level():
     model = Sequential()
-    model.add(GRU(100, recurrent_dropout=0.2, input_shape=(MAX_LENGTH, EMBEDDING_SIZE)))
-    model.add(AvgPool2D((1, 50)))
+    model.add(GRU(100, recurrent_dropout=0.2, input_shape=(MAX_LENGTH, EMBEDDING_SIZE), return_sequences=True))
+    model.add(AvgPool1D(pool_size=(170,)))
     model.add(Dense(50, activation="softmax"))
     model.compile(loss="categorical_crossentropy", optimizer='adam', metrics=["accuracy"])
-    print(model.summary())
+    model.summary()
 
 
 if __name__ == '__main__':
