@@ -71,9 +71,9 @@ class Model(ABC):
         mat = confusion_matrix(y_test, prediction)
         plt.figure(figsize=(10, 7))
         sns.heatmap(mat, annot=True, ax=ax)
-        ax.set_xlabel('Predicted labels');
-        ax.set_ylabel('True labels');
-        ax.set_title('Confusion Matrix');
+        ax.set_xlabel('Predicted labels')
+        ax.set_ylabel('True labels')
+        ax.set_title('Confusion Matrix')
         ax.xaxis.set_ticklabels(["AaronPressman", "AlanCrosby"])
         ax.yaxis.set_ticklabels(["AaronPressman", "AlanCrosby"])
         plt.savefig(os.path.join(dir_name, "confusion_matrix.png"))
