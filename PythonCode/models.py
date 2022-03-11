@@ -1,18 +1,21 @@
 import datetime
 import json
 import os
+import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
+from keras.models import Sequential
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
 from abc import ABC
 import seaborn as sns
 from contextlib import redirect_stdout
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, train_test_split
 from PythonCode.Constants import *
 from pathlib import Path
 import pandas as pd
+import tensorflow as tf
 
 
 class Model(ABC):
@@ -115,3 +118,23 @@ class Model(ABC):
         """
         pass
 
+
+def train_model(model, X_train, y_train, model_name: str):
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=VALIDATION_PART)
+
+    callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=30)
+    model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(filepath=f"./{model_name}-checkpoints",
+                                                                   save_weights_only=False,
+                                                                   monitor='val_accuracy', mode='max',
+                                                                   save_best_only=True)
+    history = model.fit(x=X_train, y=y_train, epochs=30000, shuffle=True,
+                        batch_size=200, validation_data=(X_val, y_val), callbacks=[callback, model_checkpoint_callback])
+    with open(f"{model_name}-history", "w") as file:
+        pickle.dump(history, file)
+    model.save(model_name)
+    return model
+
+
+def eval_model(model:Sequential, X_test, y_test):
+    y_pred = model.predict(X_test)
+    print(classification_report(y_pred.argmax(axis=-1).flatten(),y_test.argmax(axis=-1).flatten()))

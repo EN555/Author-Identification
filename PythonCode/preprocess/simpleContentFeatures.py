@@ -1,12 +1,12 @@
 import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+import swifter
 import spacy
 from spacy import displacy
 from collections import Counter
 import en_core_web_sm
 
 nlp = en_core_web_sm.load()
-from sklearn.feature_extraction.text import CountVectorizer
-import swifter
 
 
 def name_entity_recognition(df: pd.DataFrame) -> pd.DataFrame:

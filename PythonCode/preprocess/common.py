@@ -48,7 +48,7 @@ def num_sentences_based_chucking(df: pd.DataFrame, chunk_size: int):
 
 
 def combine_features(feature_extractors: list, x_train: pd.DataFrame, x_test: pd.DataFrame) -> (
-pd.DataFrame, pd.DataFrame):
+        pd.DataFrame, pd.DataFrame):
     """
     @param feature_extractors list of feature extractor callback like complex_style_features_extraction
     """
@@ -104,7 +104,6 @@ def preprocess_pipeline(data_path: str, number_of_authors: int, repesention_hand
     x_train = x_train.loc[:, keep_indexes]
     x_test = x_test.loc[:, keep_indexes]
 
-
     if save_path is not None:
         Path(save_path).mkdir(parents=True, exist_ok=True)
         x_train.to_csv(os.path.join(save_path, "x_train.csv"))
@@ -128,3 +127,9 @@ def load_data(path: str, number_of_authors: int) -> pd.DataFrame:
                 curr_row[TEXT_COLUMN_LABEL] = book.read()
             rows_list.append(curr_row.copy())
     return pd.DataFrame(rows_list)
+
+
+def merge_datasets(data_path: str = "../Data/C50") -> pd.DataFrame:
+    df_test = load_data(f"{data_path}/C50test", 50)
+    df_train = load_data(f"{data_path}/C50train", 50)
+    return df_train.append(df_test, ignore_index=True)
