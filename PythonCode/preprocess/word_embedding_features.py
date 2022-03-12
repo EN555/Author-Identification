@@ -8,7 +8,6 @@ import re
 from typing import Optional
 import swifter
 from PythonCode.Constants import *
-from PythonCode.Constants import TEXT_COLUMN_NAME
 from sklearn.model_selection import train_test_split
 
 lemmatizer = nltk.stem.WordNetLemmatizer()
@@ -70,15 +69,15 @@ def pad_matrix(arr: np.ndarray, max_length: int) -> Optional[np.ndarray]:
         return arr
     if arr.shape[0] > max_length:
         return arr[:max_length, :]
-    return np.concatenate([arr, np.zeros((max_length - arr.shape[0], arr.shape[1]))], axis=0, dtype=float)
+    return np.concatenate([arr, np.zeros((max_length - arr.shape[0], arr.shape[1]))], axis=0, dtype=np.float32)
 
 
-def sentence_level_preprocess_helper(text: str):
+def sentence_level_preprocess_helper(text: str, embedding_table):
     words = nltk.word_tokenize(text)
     result = []
     missing_embedding_count = 0
     for word in words:
-        embedding = tranform_word(word)
+        embedding = tranform_word(word, embedding_table)
         if embedding is not None:
             result.append(embedding)
         else:
@@ -95,13 +94,15 @@ def preprocess_labels(y: pd.Series) -> np.ndarray:
     return np.expand_dims(one_hot, axis=1)
 
 
-def sentence_level_preprocess(df: pd.DataFrame):
+def sentence_level_preprocess(df: pd.DataFrame, embedding_table):
     def helper(X):
         data = num_sentences_based_chucking(X, NUM_OF_SENTENCE_CHUNK)
-        res = data["X"].swifter.apply(sentence_level_preprocess_helper)["data"].dropna().reset_index(drop=True)
+        res = data["X"].swifter.apply(lambda word: sentence_level_preprocess_helper(word, embedding_table))[
+            "data"].dropna().reset_index(drop=True)
         return np.vstack(res).reshape((res.size, MAX_LENGTH, EMBEDDING_SIZE)), preprocess_labels(data["y"])
 
-    X_train, X_test, y_train, y_test = train_test_split(df["book_text"], df["author_name"], test_size=TEST_PART)
+    X_train, X_test, y_train, y_test = train_test_split(df[TEXT_COLUMN_NAME], df[AUTHOR_NAME_COLUMN_NAME],
+                                                        test_size=TEST_PART)
     return helper(pd.concat([X_train.rename("X"), y_train.rename("y")], axis=1)), \
            helper(pd.concat([X_test.rename("X"), y_test.rename("y")], axis=1))
 
@@ -111,17 +112,17 @@ def pad_array(arr: np.ndarray, pad_size: int):  # TODO: reuse pad_matrix instead
         return arr
     elif arr.size > pad_size:
         return arr[:pad_size, ]
-    return np.concatenate([arr, np.zeros(pad_size - arr.size)], dtype=float)
+    return np.concatenate([arr, np.zeros(pad_size - arr.size)], dtype=np.float32)
 
 
-def article_level_preprocess_helper(text: str):
+def article_level_preprocess_helper(text: str, embedding_table):
     sentences = nltk.sent_tokenize(text)
     result = []
     for sentence in sentences:
         words = nltk.word_tokenize(sentence)
         curr_result = []
         for word in words:
-            embedding = tranform_word(word)
+            embedding = tranform_word(word, embedding_table)
             if embedding is not None:
                 curr_result.append(embedding)
         if len(curr_result) != 0:
@@ -129,10 +130,12 @@ def article_level_preprocess_helper(text: str):
     return pad_matrix(np.array(result), MAX_NUMBER_OF_SENTENCE)
 
 
-def article_level_preprocess(df: pd.DataFrame):
+def article_level_preprocess(df: pd.DataFrame, embedding_table):
     def helper(X):
-        res = X.swifter.apply(article_level_preprocess_helper).reset_index(drop=True)
+        res = X.swifter.apply(lambda word: article_level_preprocess_helper(word, embedding_table)).reset_index(
+            drop=True)
         return np.vstack(res).reshape((res.size, MAX_NUMBER_OF_SENTENCE, MAX_SENTENCE_LENGTH))
 
-    X_train, X_test, y_train, y_test = train_test_split(df[TEXT_COLUMN_NAME], df[AUTHOR_NAME_COLUMN_NAME], test_size=TEST_PART)
+    X_train, X_test, y_train, y_test = train_test_split(df[TEXT_COLUMN_NAME], df[AUTHOR_NAME_COLUMN_NAME],
+                                                        test_size=TEST_PART)
     return helper(X_train), helper(X_test), preprocess_labels(y_train), preprocess_labels(y_test)
