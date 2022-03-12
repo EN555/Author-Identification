@@ -26,7 +26,7 @@ def default_preprocess(df) -> (corpora.Dictionary, List[List[Tuple[int, int]]]):
         return [[word for word in simple_preprocess(str(doc))
                  if word not in ignore_words] for doc in texts]
 
-    data_words = list(sent_to_words(df[TEXT_COLUMN_LABEL].values.tolist()))
+    data_words = list(sent_to_words(df[TEXT_COLUMN_NAME].values.tolist()))
     data_words = remove_stopwords(data_words)
     id2word = corpora.Dictionary(data_words)
     return id2word, [id2word.doc2bow(text) for text in data_words]

@@ -19,11 +19,11 @@ def chunking(df: pd.DataFrame, chunk_size: int = 100) -> pd.DataFrame:
     """
     rows = []
     for _, row in df.iterrows():
-        words = row[TEXT_COLUMN_LABEL].split(' ')
+        words = row[TEXT_COLUMN_NAME].split(' ')
         chunks = [' '.join(words[i: i + chunk_size]) for i in range(0, len(words), chunk_size)]
         for chunk in chunks:
             tmp_row = row.copy()
-            tmp_row[TEXT_COLUMN_LABEL] = chunk
+            tmp_row[TEXT_COLUMN_NAME] = chunk
             rows.append(tmp_row.copy())
     return pd.DataFrame(rows)
 
@@ -31,12 +31,12 @@ def chunking(df: pd.DataFrame, chunk_size: int = 100) -> pd.DataFrame:
 def num_sentences_based_chucking(df: pd.DataFrame, chunk_size: int):
     def create_chunk(curr_chunk, row):
         tmp_row = row.copy()
-        tmp_row[TEXT_COLUMN_LABEL] = "".join(curr_chunk)
+        tmp_row[TEXT_COLUMN_NAME] = "".join(curr_chunk)
         return tmp_row.copy()
 
     rows = []
     for _, row in df.iterrows():
-        sentences = nltk.tokenize.sent_tokenize(row[TEXT_COLUMN_LABEL])
+        sentences = nltk.tokenize.sent_tokenize(row[TEXT_COLUMN_NAME])
         curr_chunk = []
         for sentence in sentences:
             curr_chunk.append(sentence)
@@ -77,7 +77,7 @@ def preprocess_pipeline(data_path: str, number_of_authors: int, repesention_hand
     if data_filter is not None:
         df = data_filter(df)
 
-    X, Y = pd.DataFrame(df[TEXT_COLUMN_LABEL], columns=[TEXT_COLUMN_LABEL]), df[AUTHOR_NAME_COLUMN_NAME]
+    X, Y = pd.DataFrame(df[TEXT_COLUMN_NAME], columns=[TEXT_COLUMN_NAME]), df[AUTHOR_NAME_COLUMN_NAME]
 
     x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=test_size, random_state=random_state)
     x_train, x_test = repesention_handler(x_train, x_test, **kwargs)
@@ -124,7 +124,7 @@ def load_data(path: str, number_of_authors: int) -> pd.DataFrame:
         for book_name in books_files:
             curr_row[BOOK_NAME_COLUMN_NAME] = book_name
             with open(os.path.join(author_path, book_name), "r") as book:
-                curr_row[TEXT_COLUMN_LABEL] = book.read()
+                curr_row[TEXT_COLUMN_NAME] = book.read()
             rows_list.append(curr_row.copy())
     return pd.DataFrame(rows_list)
 

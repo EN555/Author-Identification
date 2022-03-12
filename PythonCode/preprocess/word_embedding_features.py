@@ -8,41 +8,45 @@ import re
 from typing import Optional
 import swifter
 from PythonCode.Constants import *
-from PythonCode.Constants import TEXT_COLUMN_LABEL
+from PythonCode.Constants import TEXT_COLUMN_NAME
 from sklearn.model_selection import train_test_split
 
 lemmatizer = nltk.stem.WordNetLemmatizer()
 stemmer = nltk.stem.PorterStemmer()
-print("downloading pretrained embedding model.\nthis may take a while...")
-glove_vectors = gensim.downloader.load(GLOVE_MODEL_NAME)
 
 DATA_PATH = "../../Data/C50"
 OUTPUTS_PATH = "."
 
 
-def tranform_word(word: str) -> Optional[np.ndarray]:
+def _get_embedding_table(embedding_table):
+    if embedding_table is None:
+        print("downloading pretrained embedding model.\nthis may take a while...")
+        return gensim.downloader.load(GLOVE_MODEL_NAME)
+    return embedding_table
+
+
+def tranform_word(word: str, embedding_table=None) -> Optional[np.ndarray]:
+    embedding_table = _get_embedding_table(embedding_table)
     word = re.sub(r'[^a-z]', '', word.lower())
-    if word in glove_vectors:
-        return glove_vectors[word]
+    if word in embedding_table:
+        return embedding_table[word]
     return None
 
 
-def complex_tranform_word(word: str):
-    result = tranform_word(word)
+def complex_tranform_word(word: str, embedding_table=None) -> Optional[np.ndarray]:
+    embedding_table = _get_embedding_table(embedding_table)
+    result = tranform_word(word, embedding_table)
     if result is None:
-        token = lemmatizer.lemmatize(word)
-        if token in glove_vectors:
-            return glove_vectors[token]
-        token = stemmer.stem(word)
-        if token in glove_vectors:
-            return glove_vectors[token]
+        token_lem = tranform_word(lemmatizer.lemmatize(word), embedding_table)
+        token_stem = tranform_word(stemmer.stem(word), embedding_table)
+        return token_lem if token_lem is not None else token_stem
     return result
 
 
 def num_sentences_based_chucking(df: pd.DataFrame, chunk_size: int):
     def create_chunk():
         temp_row = row.copy()
-        temp_row[TEXT_COLUMN_LABEL] = "".join(curr_chunk)
+        temp_row[TEXT_COLUMN_NAME] = "".join(curr_chunk)
         rows.append(temp_row)
         return temp_row
 
@@ -130,6 +134,5 @@ def article_level_preprocess(df: pd.DataFrame):
         res = X.swifter.apply(article_level_preprocess_helper).reset_index(drop=True)
         return np.vstack(res).reshape((res.size, MAX_NUMBER_OF_SENTENCE, MAX_SENTENCE_LENGTH))
 
-    X_train, X_test, y_train, y_test = train_test_split(df["book_text"], df["author_name"], test_size=TEST_PART)
+    X_train, X_test, y_train, y_test = train_test_split(df[TEXT_COLUMN_NAME], df[AUTHOR_NAME_COLUMN_NAME], test_size=TEST_PART)
     return helper(X_train), helper(X_test), preprocess_labels(y_train), preprocess_labels(y_test)
-

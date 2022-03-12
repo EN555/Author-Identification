@@ -30,11 +30,11 @@ def bag_of_words(x_train: pd.DataFrame, x_test: pd.DataFrame, **kwargs) -> (pd.D
     @return: bag of words representation for the give data
     """
     vectorizer = CountVectorizer(**kwargs)
-    vectorizer.fit(x_train[TEXT_COLUMN_LABEL])
+    vectorizer.fit(x_train[TEXT_COLUMN_NAME])
     x_train = pd.DataFrame(columns=vectorizer.get_feature_names(),
-                           data=vectorizer.transform(x_train[TEXT_COLUMN_LABEL]).toarray())
+                           data=vectorizer.transform(x_train[TEXT_COLUMN_NAME]).toarray())
     x_test = pd.DataFrame(columns=vectorizer.get_feature_names(),
-                          data=vectorizer.transform(x_test[TEXT_COLUMN_LABEL]).toarray())
+                          data=vectorizer.transform(x_test[TEXT_COLUMN_NAME]).toarray())
     return x_train, x_test
 
 
@@ -60,8 +60,8 @@ def word_2_vec(x_train: pd.DataFrame, x_test: pd.DataFrame, word2vec_path: str, 
             encoding = np.concatenate([tmp_encoding, np.zeros(embedding_size * max_text_len - len(tmp_encoding))])
         return pd.Series(encoding)
 
-    return pd.DataFrame(x_train[TEXT_COLUMN_LABEL].astype(str).apply(get_word2vec)), \
-           pd.DataFrame(x_test[TEXT_COLUMN_LABEL].astype(str).apply(get_word2vec))
+    return pd.DataFrame(x_train[TEXT_COLUMN_NAME].astype(str).apply(get_word2vec)), \
+           pd.DataFrame(x_test[TEXT_COLUMN_NAME].astype(str).apply(get_word2vec))
 
 
 def aggregative_word2vec(x_train: pd.DataFrame, x_test: pd.DataFrame, word2vec_path: str, embedding_size: int,
@@ -80,5 +80,5 @@ def aggregative_word2vec(x_train: pd.DataFrame, x_test: pd.DataFrame, word2vec_p
         return pd.Series(aggregative_function(
             [word2vec.get_vector(word) if word in word2vec else np.zeros(embedding_size) for word in stem_words(text)], axis=0))
 
-    return pd.DataFrame(x_train[TEXT_COLUMN_LABEL].swifter.apply(get_aggrigated_word2vec)), \
-           pd.DataFrame(x_test[TEXT_COLUMN_LABEL].swifter.apply(get_aggrigated_word2vec))
+    return pd.DataFrame(x_train[TEXT_COLUMN_NAME].swifter.apply(get_aggrigated_word2vec)), \
+           pd.DataFrame(x_test[TEXT_COLUMN_NAME].swifter.apply(get_aggrigated_word2vec))

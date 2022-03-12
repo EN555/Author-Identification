@@ -58,7 +58,7 @@ def honore_measure(x: pd.DataFrame) -> pd.DataFrame:
             return 10**5    # big number, to prevent division by 0
         return 100*np.log(N) / (1 - (v1/V))
 
-    return pd.DataFrame(x[TEXT_COLUMN_LABEL].astype(str).swifter.apply(get_honore_measure).rename('honore_measure'))
+    return pd.DataFrame(x[TEXT_COLUMN_NAME].astype(str).swifter.apply(get_honore_measure).rename('honore_measure'))
 
 
 def hapax_disLegemena(x: pd.DataFrame) -> pd.DataFrame:
@@ -74,7 +74,7 @@ def hapax_disLegemena(x: pd.DataFrame) -> pd.DataFrame:
         v2 = len([_ for _, count in words_count.items() if count == 2])
         return pd.Series((v2 / (len(words) + EPSILON), v2 / (len(set(words))+EPSILON)))
 
-    return pd.DataFrame(x[TEXT_COLUMN_LABEL].astype(str).swifter.apply(get_hapax_disLegemena)).set_axis(['hapax_disLegemena(H)', 'hapax_disLegemena(S)'], axis=1)
+    return pd.DataFrame(x[TEXT_COLUMN_NAME].astype(str).swifter.apply(get_hapax_disLegemena)).set_axis(['hapax_disLegemena(H)', 'hapax_disLegemena(S)'], axis=1)
 
 
 def Yules_characteristic(x: pd.DataFrame) -> pd.DataFrame:
@@ -92,7 +92,7 @@ def Yules_characteristic(x: pd.DataFrame) -> pd.DataFrame:
         N = len(words)+EPSILON
         return 10000 * (M - N) / N**2
 
-    return pd.DataFrame(x[TEXT_COLUMN_LABEL].astype(str).swifter.apply(get_Yules_characteristic).rename('Yules_characteristic'))
+    return pd.DataFrame(x[TEXT_COLUMN_NAME].astype(str).swifter.apply(get_Yules_characteristic).rename('Yules_characteristic'))
 
 
 def simpsons_measure(x: pd.DataFrame) -> pd.DataFrame:
@@ -107,7 +107,7 @@ def simpsons_measure(x: pd.DataFrame) -> pd.DataFrame:
         N = len(words)
         return 1 - np.sum([n*(n-1) for n in words_count.values()]) / N*(N-1)
 
-    return pd.DataFrame(x[TEXT_COLUMN_LABEL].astype(str).swifter.apply(get_simpsons_measure).rename('simpsons_measure'))
+    return pd.DataFrame(x[TEXT_COLUMN_NAME].astype(str).swifter.apply(get_simpsons_measure).rename('simpsons_measure'))
 
 
 def brunets_measure(x: pd.DataFrame) -> pd.DataFrame:
@@ -125,7 +125,7 @@ def brunets_measure(x: pd.DataFrame) -> pd.DataFrame:
         N = len(words)+EPSILON
         return (V - a) / (np.log(N))
 
-    return pd.DataFrame(x[TEXT_COLUMN_LABEL].astype(str).swifter.apply(get_brunets_measure).rename('brunets_measure'))
+    return pd.DataFrame(x[TEXT_COLUMN_NAME].astype(str).swifter.apply(get_brunets_measure).rename('brunets_measure'))
 
 
 def avg_word_frequency(x: pd.DataFrame) -> pd.DataFrame:
@@ -140,7 +140,7 @@ def avg_word_frequency(x: pd.DataFrame) -> pd.DataFrame:
         maximum = np.max(list(words_count.values()))
         return np.average([np.ceil(np.log(maximum / words_count[word])) for word in words])
 
-    return pd.DataFrame(x[TEXT_COLUMN_LABEL].astype(str).swifter.apply(get_avg_word_frequency).rename('avg_word_frequency'))
+    return pd.DataFrame(x[TEXT_COLUMN_NAME].astype(str).swifter.apply(get_avg_word_frequency).rename('avg_word_frequency'))
 
 
 def entropy_over_words_frequencies(x: pd.DataFrame) -> pd.DataFrame:
@@ -153,7 +153,7 @@ def entropy_over_words_frequencies(x: pd.DataFrame) -> pd.DataFrame:
         distribution = np.array(list(words_count.values())) / (len(words) + EPSILON)
         return entropy(distribution, base=2)
 
-    return pd.DataFrame(x[TEXT_COLUMN_LABEL].astype(str).swifter.apply(get_entropy).rename('entropy'))
+    return pd.DataFrame(x[TEXT_COLUMN_NAME].astype(str).swifter.apply(get_entropy).rename('entropy'))
 
 
 def __syllable_count(word: str) -> int:
@@ -188,7 +188,7 @@ def flesch_reading_ease_flesch_kincaid_grade_level(x: pd.DataFrame) -> pd.DataFr
         flesch_kincaid = 0.39 * (len(words) / (len(sentences) + EPSILON)) + 11.8 * (syllable_count / (len(words) +EPSILON)) - 15.59
         return pd.Series((flesch, flesch_kincaid))
 
-    return pd.DataFrame(x[TEXT_COLUMN_LABEL].astype(str).swifter.apply(get_flesch_reading_ease_flesch_kincaid_grade_level)).set_axis(['flesch', 'flesch_kincaid'], axis=1)
+    return pd.DataFrame(x[TEXT_COLUMN_NAME].astype(str).swifter.apply(get_flesch_reading_ease_flesch_kincaid_grade_level)).set_axis(['flesch', 'flesch_kincaid'], axis=1)
 
 
 def gunning_fog_index(x: pd.DataFrame) -> pd.DataFrame:
@@ -201,4 +201,4 @@ def gunning_fog_index(x: pd.DataFrame) -> pd.DataFrame:
         complex_words = [word for word in words if __syllable_count(word) >= 3]
         return 0.4*((len(words) / (len(sentences) + EPSILON)) + 100*(len(complex_words) / (len(words) + EPSILON)))
 
-    return pd.DataFrame(x[TEXT_COLUMN_LABEL].astype(str).swifter.apply(get_gunning_fog_index).rename('gunning_fog_index'))
+    return pd.DataFrame(x[TEXT_COLUMN_NAME].astype(str).swifter.apply(get_gunning_fog_index).rename('gunning_fog_index'))

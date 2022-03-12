@@ -2,7 +2,7 @@ import nltk
 import pandas as pd
 from matplotlib import pyplot as plt
 from wordcloud import WordCloud
-from PythonCode.Constants import TEXT_COLUMN_LABEL
+from PythonCode.Constants import TEXT_COLUMN_NAME
 import seaborn as sns
 import math
 from tqdm import tqdm
@@ -16,7 +16,7 @@ def basic_stats(df):
     print("\nword(word_tokenize based) number:\n")
     print(df["book_text"].swifter.apply(lambda s: len(nltk.tokenize.word_tokenize(s))).describe())
 
-    long_string = ','.join(list(df[TEXT_COLUMN_LABEL].values))
+    long_string = ','.join(list(df[TEXT_COLUMN_NAME].values))
     wordcloud = WordCloud(background_color="white", max_words=5000, contour_width=3, contour_color='steelblue')
     wordcloud.generate(long_string)
     wordcloud.to_image()
