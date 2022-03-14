@@ -6,6 +6,9 @@ import swifter
 import re
 import csv
 import nltk
+import numpy as np
+from typing import Optional
+from PythonCode.Constants import *
 
 
 def get_data() -> pd.DataFrame:
@@ -77,3 +80,21 @@ def average_comma_uses(data) -> pd.DataFrame:
         .apply(lambda text: pd.Series(nltk.sent_tokenize(text)).map(
         lambda sent: pd.Series(sent).value_counts()[","] / len(nltk.word_tokenize(sent))).mean())
     return data
+
+
+def pad_array(arr: np.ndarray, pad_size: int):
+    if arr.size == pad_size:
+        return arr
+    elif arr.size > pad_size:
+        return arr[:pad_size, ]
+    return np.concatenate([arr, np.zeros(pad_size - arr.size)], dtype=np.float32)
+
+
+def pad_matrix(arr: np.ndarray, max_length: int) -> Optional[np.ndarray]:
+    if arr.size == 0:
+        return np.zeros((max_length, MAX_SENTENCE_LENGTH), dtype=np.float32)
+    if arr.shape[0] == max_length:
+        return arr
+    if arr.shape[0] > max_length:
+        return arr[:max_length, :]
+    return np.concatenate([arr, np.zeros((max_length - arr.shape[0], arr.shape[1]))], axis=0, dtype=np.float32)

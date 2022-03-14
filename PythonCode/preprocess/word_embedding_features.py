@@ -62,30 +62,6 @@ def num_sentences_based_chucking(df: pd.DataFrame, chunk_size: int):
     return pd.DataFrame(rows)
 
 
-def pad_matrix(arr: np.ndarray, max_length: int) -> Optional[np.ndarray]:
-    if arr.size == 0:
-        return None
-    if arr.shape[0] == max_length:
-        return arr
-    if arr.shape[0] > max_length:
-        return arr[:max_length, :]
-    return np.concatenate([arr, np.zeros((max_length - arr.shape[0], arr.shape[1]))], axis=0, dtype=np.float32)
-
-
-def sentence_level_preprocess_helper(text: str, embedding_table):
-    words = nltk.word_tokenize(text)
-    result = []
-    missing_embedding_count = 0
-    for word in words:
-        embedding = tranform_word(word, embedding_table)
-        if embedding is not None:
-            result.append(embedding)
-        else:
-            missing_embedding_count += 1
-    return pd.Series(
-        {"data": pad_matrix(np.array(result), MAX_LENGTH), "missing_embedding_count": missing_embedding_count})
-
-
 def preprocess_labels(y: pd.Series) -> np.ndarray:
     y_codes = pd.Categorical(y).codes
     one_hot = tf.keras.utils.to_categorical(
@@ -97,9 +73,14 @@ def preprocess_labels(y: pd.Series) -> np.ndarray:
 def sentence_level_preprocess(df: pd.DataFrame, embedding_table):
     def helper(X):
         data = num_sentences_based_chucking(X, NUM_OF_SENTENCE_CHUNK)
-        res = data["X"].swifter.apply(lambda word: sentence_level_preprocess_helper(word, embedding_table))[
-            "data"].dropna().reset_index(drop=True)
-        return np.vstack(res).reshape((res.size, MAX_LENGTH, EMBEDDING_SIZE)), preprocess_labels(data["y"])
+        X_pre = np.zeros((data["y"].size, MAX_LENGTH, 300))
+        for i, text in enumerate(data["X"]):
+            words = nltk.word_tokenize(text)
+            for j, word in enumerate(words):
+                embedding = tranform_word(word, embedding_table)
+                if embedding is not None and j < MAX_LENGTH:
+                    X_pre[i, j] = embedding
+        return X_pre, preprocess_labels(data["y"])
 
     X_train, X_test, y_train, y_test = train_test_split(df[TEXT_COLUMN_NAME], df[AUTHOR_NAME_COLUMN_NAME],
                                                         test_size=TEST_PART)
@@ -107,34 +88,18 @@ def sentence_level_preprocess(df: pd.DataFrame, embedding_table):
            helper(pd.concat([X_test.rename("X"), y_test.rename("y")], axis=1))
 
 
-def pad_array(arr: np.ndarray, pad_size: int):  # TODO: reuse pad_matrix instead
-    if arr.size == pad_size:
-        return arr
-    elif arr.size > pad_size:
-        return arr[:pad_size, ]
-    return np.concatenate([arr, np.zeros(pad_size - arr.size)], dtype=np.float32)
-
-
-def article_level_preprocess_helper(text: str, embedding_table):
-    sentences = nltk.sent_tokenize(text)
-    result = []
-    for sentence in sentences:
-        words = nltk.word_tokenize(sentence)
-        curr_result = []
-        for word in words:
-            embedding = tranform_word(word, embedding_table)
-            if embedding is not None:
-                curr_result.append(embedding)
-        if len(curr_result) != 0:
-            result.append(pad_array(np.array(curr_result, dtype=float).mean(axis=1, dtype=float), MAX_SENTENCE_LENGTH))
-    return pad_matrix(np.array(result), MAX_NUMBER_OF_SENTENCE)
-
-
 def article_level_preprocess(df: pd.DataFrame, embedding_table):
     def helper(X):
-        res = X.swifter.apply(lambda word: article_level_preprocess_helper(word, embedding_table)).reset_index(
-            drop=True)
-        return np.vstack(res).reshape((res.size, MAX_NUMBER_OF_SENTENCE, MAX_SENTENCE_LENGTH))
+        X_pre = np.zeros((X.shape[0], MAX_NUMBER_OF_SENTENCE, EMBEDDING_SIZE), dtype=np.float32)
+        for k, text in enumerate(X):
+            sentences = nltk.sent_tokenize(text)
+            for i, sentence in enumerate(sentences):
+                words = nltk.word_tokenize(sentence)
+                for j, word in enumerate(words):
+                    embedding = tranform_word(word, embedding_table)
+                    if embedding is not None and i < MAX_NUMBER_OF_SENTENCE and j < MAX_SENTENCE_LENGTH:
+                        X_pre[k, i, j] = embedding
+        return X_pre.mean(axis=1, dtype=np.float32)
 
     X_train, X_test, y_train, y_test = train_test_split(df[TEXT_COLUMN_NAME], df[AUTHOR_NAME_COLUMN_NAME],
                                                         test_size=TEST_PART)
