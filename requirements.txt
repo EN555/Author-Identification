@@ -16,3 +16,4 @@ scikit-learn~=1.0.2
 tensorflow~=2.8.0
 keras~=2.8.0
 spacy~=3.2.3
+transformers~=4.17.0
