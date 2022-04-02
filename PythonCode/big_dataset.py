@@ -5,13 +5,10 @@ from tqdm import tqdm
 import swifter
 import re
 import csv
-import nltk
-import numpy as np
-from typing import Optional
 from PythonCode.Constants import *
 
 
-def get_data() -> pd.DataFrame:
+def get_data(save_to=DEFAULT_SAVE_TO) -> pd.DataFrame:
     # columns = ["Text", "title", "author", "publish"]
     data_path = "./books1/epubtxt"
     txt_files = pd.Series(next(os.walk(data_path))[-1])
@@ -23,7 +20,6 @@ def get_data() -> pd.DataFrame:
             dict_row = json.loads(line)
             series_row = pd.Series()
             try:
-                book_name = ''
                 if "txt" in dict_row and dict_row["txt"] != '':
                     book_name = dict_row['txt']
                 elif "epub" in dict_row and dict_row["epub"] != '':
@@ -49,11 +45,11 @@ def get_data() -> pd.DataFrame:
                 print(dict_row)
                 print(e)
     df = pd.concat(rows, axis=1).transpose()
-    df.to_csv("data.csv", quoting=csv.QUOTE_ALL)
+    df.to_csv(save_to, quoting=csv.QUOTE_ALL)
     return df
 
 
-def replace_name() -> pd.DataFrame:
+def preprocess() -> pd.DataFrame:
     """
     replace author's names to numebrs
     and drop 3 not important columns
@@ -67,34 +63,19 @@ def replace_name() -> pd.DataFrame:
     return data
 
 
-# average of sentence
-def average_sentence_size(data) -> pd.DataFrame:
-    data["sentence_len"] = data["Text"].swifter \
-        .apply(lambda text: pd.Series(nltk.sent_tokenize(text)).map(lambda sent: len(nltk.word_tokenize(sent))).mean())
-    return data
-
-
-# number of time uses comma
-def average_comma_uses(data) -> pd.DataFrame:
-    data["sentence_len"] = data["Text"].swifter \
-        .apply(lambda text: pd.Series(nltk.sent_tokenize(text)).map(
-        lambda sent: pd.Series(sent).value_counts()[","] / len(nltk.word_tokenize(sent))).mean())
-    return data
-
-
-def pad_array(arr: np.ndarray, pad_size: int):
-    if arr.size == pad_size:
-        return arr
-    elif arr.size > pad_size:
-        return arr[:pad_size, ]
-    return np.concatenate([arr, np.zeros(pad_size - arr.size)], dtype=np.float32)
-
-
-def pad_matrix(arr: np.ndarray, max_length: int) -> Optional[np.ndarray]:
-    if arr.size == 0:
-        return np.zeros((max_length, MAX_SENTENCE_LENGTH), dtype=np.float32)
-    if arr.shape[0] == max_length:
-        return arr
-    if arr.shape[0] > max_length:
-        return arr[:max_length, :]
-    return np.concatenate([arr, np.zeros((max_length - arr.shape[0], arr.shape[1]))], axis=0, dtype=np.float32)
+# def pad_array(arr: np.ndarray, pad_size: int):
+#     if arr.size == pad_size:
+#         return arr
+#     elif arr.size > pad_size:
+#         return arr[:pad_size, ]
+#     return np.concatenate([arr, np.zeros(pad_size - arr.size)], dtype=np.float32)
+#
+#
+# def pad_matrix(arr: np.ndarray, max_length: int) -> Optional[np.ndarray]:
+#     if arr.size == 0:
+#         return np.zeros((max_length, MAX_SENTENCE_LENGTH), dtype=np.float32)
+#     if arr.shape[0] == max_length:
+#         return arr
+#     if arr.shape[0] > max_length:
+#         return arr[:max_length, :]
+#     return np.concatenate([arr, np.zeros((max_length - arr.shape[0], arr.shape[1]))], axis=0, dtype=np.float32)

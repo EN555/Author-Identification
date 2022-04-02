@@ -69,3 +69,18 @@ def pos_count(df: pd.DataFrame) -> pd.DataFrame:
             apply(group_pos).value_counts(normalize=True).copy())
     features = features.fillna(0)
     return features
+
+
+# number of time uses comma
+def average_comma_uses(data) -> pd.DataFrame:
+    data["sentence_len"] = data["Text"].swifter \
+        .apply(lambda text: pd.Series(nltk.sent_tokenize(text)).map(
+        lambda sent: pd.Series(sent).value_counts()[","] / len(nltk.word_tokenize(sent))).mean())
+    return data
+
+
+# average of sentence
+def average_sentence_size(data) -> pd.DataFrame:
+    data["sentence_len"] = data["Text"].swifter \
+        .apply(lambda text: pd.Series(nltk.sent_tokenize(text)).map(lambda sent: len(nltk.word_tokenize(sent))).mean())
+    return data
