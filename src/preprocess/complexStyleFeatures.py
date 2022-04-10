@@ -1,10 +1,8 @@
-import pickle
 import nltk
 import pandas as pd
 import numpy as np
 
-from src.Constants import *
-import swifter
+from src.config.Constants import *
 from src.preprocess.contentFeatures import bag_of_words
 from collections import Counter
 from src.preprocess.contentFeatures import stem_words

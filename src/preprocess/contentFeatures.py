@@ -2,12 +2,10 @@ import nltk
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
-from src.Constants import *
+from src.config.Constants import *
 from typing import List
 from nltk.corpus import wordnet as wn
 from gensim import models
-import swifter
-
 
 # convert to wordnet system for pos tagging
 PENN2WN = {'NN': wn.NOUN, 'NNS': wn.NOUN, 'NNP': wn.NOUN, 'NNPS': wn.NOUN,

@@ -2,10 +2,9 @@ import json
 import os
 import pandas as pd
 from tqdm import tqdm
-import swifter
 import re
 import csv
-from src.Constants import *
+from src.config.Constants import *
 
 
 def get_data(save_to=DEFAULT_SAVE_TO) -> pd.DataFrame:

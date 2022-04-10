@@ -1,9 +1,8 @@
 import string
 from nltk.corpus import stopwords
 import pandas as pd
-from src.Constants import *
+from src.config.Constants import *
 import nltk
-import swifter
 
 
 def simple_style_features_extraction(x_train: pd.DataFrame, x_test: pd.DataFrame) -> (pd.DataFrame, pd.DataFrame):

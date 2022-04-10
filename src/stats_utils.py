@@ -2,10 +2,12 @@ import nltk
 import pandas as pd
 from matplotlib import pyplot as plt
 from wordcloud import WordCloud
-from src.Constants import TEXT_COLUMN_NAME
+from src.config.Constants import TEXT_COLUMN_NAME
 import seaborn as sns
 import math
 from tqdm import tqdm
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report
 
 
 def basic_stats(df):
@@ -31,3 +33,23 @@ def plot_feature_dist(data: pd.DataFrame, num_in_row: int = 3):
             sns.histplot(x=data[col_name], ax=axs[i // num_in_row, i % num_in_row])
         except Exception as e:
             print(e)
+
+
+def get_results(y_test, prediction):
+    sns.set_theme()
+    ax = plt.subplot()
+    mat = confusion_matrix(y_test, prediction)
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(mat, annot=True, ax=ax)
+    ax.set_xlabel('Predicted labels')
+    ax.set_ylabel('True labels')
+    ax.set_title('Confusion Matrix')
+    plt.savefig("confusion_matrix.png")
+    plt.draw()
+    # save as fig the classification report
+    plt.figure(figsize=(10, 7))
+    clf_report = classification_report(y_test, prediction, target_names=["AaronPressman", "AlanCrosby"],
+                                       output_dict=True)
+    sns.heatmap(pd.DataFrame(clf_report).iloc[:-1, :-2].T, annot=True)
+    plt.savefig("classification report.png")
+    plt.draw()
