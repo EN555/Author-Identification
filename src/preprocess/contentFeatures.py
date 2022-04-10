@@ -2,7 +2,7 @@ import nltk
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer
-from PythonCode.Constants import *
+from src.Constants import *
 from typing import List
 from nltk.corpus import wordnet as wn
 from gensim import models

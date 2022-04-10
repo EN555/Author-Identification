@@ -1,7 +1,7 @@
 import string
 from nltk.corpus import stopwords
 import pandas as pd
-from PythonCode.Constants import *
+from src.Constants import *
 import nltk
 import swifter
 

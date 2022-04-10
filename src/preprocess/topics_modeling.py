@@ -1,6 +1,6 @@
 import pandas as pd
 
-from PythonCode.preprocess.simpleStyleFeatures import *
+from src.preprocess.simpleStyleFeatures import *
 import gensim
 from gensim.utils import simple_preprocess
 from nltk.corpus import stopwords

@@ -1,7 +1,7 @@
 import os
 import nltk.tokenize
 import pandas as pd
-from PythonCode.Constants import *
+from src.Constants import *
 from itertools import islice
 
 
@@ -67,7 +67,7 @@ def load_data(path: str, number_of_authors: int) -> pd.DataFrame:
     return pd.DataFrame(rows_list)
 
 
-def merge_datasets(data_path: str = "../Data/C50") -> pd.DataFrame:
+def merge_datasets(data_path: str = "../data/C50") -> pd.DataFrame:
     df_test = load_data(f"{data_path}/C50test", 50)
     df_train = load_data(f"{data_path}/C50train", 50)
     return df_train.append(df_test, ignore_index=True)

@@ -4,7 +4,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
 import seaborn as sns
 from sklearn.model_selection import KFold, train_test_split
-from PythonCode.Constants import *
+from src.Constants import *
 import pandas as pd
 import tensorflow as tf
 

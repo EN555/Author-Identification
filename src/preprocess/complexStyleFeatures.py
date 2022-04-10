@@ -3,12 +3,12 @@ import nltk
 import pandas as pd
 import numpy as np
 
-from PythonCode.Constants import *
+from src.Constants import *
 import swifter
-from PythonCode.preprocess.contentFeatures import bag_of_words
+from src.preprocess.contentFeatures import bag_of_words
 from collections import Counter
-from PythonCode.preprocess.contentFeatures import stem_words
-from PythonCode.preprocess.contentFeatures import PENN2WN
+from src.preprocess.contentFeatures import stem_words
+from src.preprocess.contentFeatures import PENN2WN
 from scipy.stats import entropy
 from nltk.corpus import wordnet as wn
 

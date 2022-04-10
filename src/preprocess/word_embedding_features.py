@@ -7,13 +7,13 @@ import gensim
 import re
 from typing import Optional
 import swifter
-from PythonCode.Constants import *
+from src.Constants import *
 from sklearn.model_selection import train_test_split
 
 lemmatizer = nltk.stem.WordNetLemmatizer()
 stemmer = nltk.stem.PorterStemmer()
 
-DATA_PATH = "../../Data/C50"
+DATA_PATH = "../../data/C50"
 OUTPUTS_PATH = "."
 
 
@@ -70,7 +70,7 @@ def preprocess_labels(y: pd.Series) -> np.ndarray:
     return np.expand_dims(one_hot, axis=1)
 
 
-def sentence_level_preprocess(df: pd.DataFrame, embedding_table):
+def sentence_level_preprocess(df: pd.DataFrame, embedding_table=None):
     def helper(X):
         data = num_sentences_based_chucking(X, NUM_OF_SENTENCE_CHUNK)
         X_pre = np.zeros((data["y"].size, MAX_LENGTH, 300))
@@ -88,7 +88,7 @@ def sentence_level_preprocess(df: pd.DataFrame, embedding_table):
            helper(pd.concat([X_test.rename("X"), y_test.rename("y")], axis=1))
 
 
-def article_level_preprocess(df: pd.DataFrame, embedding_table):
+def article_level_preprocess(df: pd.DataFrame, embedding_table=None):
     def helper(X):
         X_pre = np.zeros((X.shape[0], MAX_NUMBER_OF_SENTENCE, EMBEDDING_SIZE), dtype=np.float32)
         for k, text in enumerate(X):

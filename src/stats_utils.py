@@ -2,7 +2,7 @@ import nltk
 import pandas as pd
 from matplotlib import pyplot as plt
 from wordcloud import WordCloud
-from PythonCode.Constants import TEXT_COLUMN_NAME
+from src.Constants import TEXT_COLUMN_NAME
 import seaborn as sns
 import math
 from tqdm import tqdm
