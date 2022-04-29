@@ -1,24 +1,35 @@
-import logo from './logo.svg';
 import './App.css';
+import React from "react";
+import { Route, Redirect, Switch } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import InferForm from './components/inferForm';
+import NotFound from './components/notFound';
 
 function App() {
+  console.log("starting app");
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <React.Fragment>
+        {/* <NavBar user={user} /> */}
+        <main className="container">
+          <ToastContainer />
+          <Switch>
+            <Route path="/infer" component={InferForm} />
+            <Route
+              path="/"
+              render={(props) => (
+                <Redirect
+                  to={{
+                    pathname: "/infer",
+                    state: props.location,
+                  }}
+                />)
+              }
+            ></Route>
+            <Route path="/not-found" component={NotFound} />
+            <Redirect to="/not-found" />
+          </Switch>
+        </main>
+      </React.Fragment>
   );
 }
 
