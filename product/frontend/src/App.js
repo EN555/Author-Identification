@@ -1,4 +1,3 @@
-import './App.css';
 import React from "react";
 import { Route, Redirect, Switch } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
@@ -11,7 +10,8 @@ function App() {
     <React.Fragment>
         {/* <NavBar user={user} /> */}
         <main className="container">
-          <ToastContainer />
+          <InferForm />
+          {/* <ToastContainer />
           <Switch>
             <Route path="/infer" component={InferForm} />
             <Route
@@ -27,7 +27,7 @@ function App() {
             ></Route>
             <Route path="/not-found" component={NotFound} />
             <Redirect to="/not-found" />
-          </Switch>
+          </Switch> */}
         </main>
       </React.Fragment>
   );

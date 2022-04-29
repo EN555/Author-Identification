@@ -5,8 +5,12 @@ from fastapi import (
     status,
 )
 from fastapi.responses import ORJSONResponse
+from product.backend.models.exceptions import ResourceNotFound
+from src.preprocess.word_embedding_features import sentence_level_preprocess
+from tensorflow import keras
 
-from models.exceptions import ResourceNotFound
+model = keras.models.load_model('notebooks/outputs/sentence_level_preprocess-checkpoints')
+
 
 app = FastAPI(
     title="Infer Service API",
@@ -30,5 +34,8 @@ async def resource_not_found_exception_handler(
     response_class=ORJSONResponse,
     status_code=status.HTTP_200_OK,
 )
-async def get_dataset_meta(text: str,background_task:BackgroundTasks):
+async def infer(text: str,background_task:BackgroundTasks):
+    pre_text = sentence_level_preprocess(text)
+    pred = model.predict(pre_text)
+    pred
     return f"label {text} "

@@ -2,7 +2,7 @@ import logging
 import uvicorn
 
 from pipeline.routes import app
-from models.config import config as settings
+from product.backend.models.config import config as settings
 
 logger = logging.getLogger(__name__)
 
