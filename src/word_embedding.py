@@ -1,50 +1,61 @@
-from Constants import *
-from src.preprocess.common import merge_datasets
+import pickle
+import pandas as pd
+from sklearn.model_selection import train_test_split
+import tensorflow as tf
+from src.config.Constants import *
 from keras.layers import Dense, GRU, AvgPool1D, Masking
-from keras.models import Sequential
-from sklearn.metrics import classification_report
-from src.preprocess.word_embedding_features import article_level_preprocess,sentence_level_preprocess
-from src.models import train_model
+
+from src.preprocess.common import merge_datasets, num_sentences_based_chucking
+from src.preprocess.word_embedding_features import sentence_level_preprocess
 
 DATA_PATH = "../data/C50"
 
 
-def article_level():
-    df = merge_datasets(DATA_PATH)
-    X_train, X_test, y_train, y_test = article_level_preprocess(df)
-    model = article_level_model()
-    train_model(model,X_train,y_train,"article_based_model")
-    # eval_model(model,X_test,y_test)
-    y_pred = model.predict(X_test)
-    print(classification_report(y_pred, y_test))
+def article_level_pipeline():
+    def forward_pass(x):
+        x = Masking(mask_value=0., input_shape=(MAX_NUMBER_OF_SENTENCE, MAX_SENTENCE_LENGTH))(x)
+        x = GRU(100, recurrent_dropout=0.2, return_sequences=True)(x)
+        x = AvgPool1D(pool_size=(MAX_NUMBER_OF_SENTENCE,))(x)
+        return Dense(50, activation="softmax")(x)
+
+    X_train, X_test, y_train, y_test = train_test_split(df[TEXT_COLUMN_NAME], df[AUTHOR_NAME_COLUMN_NAME],
+                                                        test_size=TEST_PART)
+    inputs = tf.keras.Input(shape=(1,), dtype='string')
+    outputs = forward_pass(sentence_level_preprocess(inputs))
+    model = tf.keras.Model(inputs, outputs)
+    model.compile(loss="categorical_crossentropy", optimizer='adam', metrics=["accuracy"])
+    print(model.summary())
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=VALIDATION_PART)
+
+    callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=30)
+    model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(filepath=f"./article-level-checkpoints",
+                                                                   save_weights_only=False,
+                                                                   monitor='val_accuracy', mode='max',
+                                                                   save_best_only=True)
+    history = model.fit(x=X_train, y=y_train, epochs=30000, shuffle=True,
+                        batch_size=200, validation_data=(X_val, y_val), callbacks=[callback, model_checkpoint_callback])
+    with open("article-level-history", "w") as file:
+        pickle.dump(history, file)
+    model.save("article-level")
 
 
-def article_level_model():
-    model = Sequential()
-    model.add(Masking(mask_value=0., input_shape=(MAX_NUMBER_OF_SENTENCE, MAX_SENTENCE_LENGTH)))
-    model.add(GRU(100, recurrent_dropout=0.2, return_sequences=True))
-    model.add(AvgPool1D(pool_size=(MAX_NUMBER_OF_SENTENCE,)))
-    model.add(Dense(50, activation="softmax"))
+def sentence_level_pipeline(df: pd.DataFrame):
+    def forward_pass(x):
+        x = Masking(mask_value=0., input_shape=(MAX_LENGTH, EMBEDDING_SIZE))(x)
+        x = GRU(100, recurrent_dropout=0.2, return_sequences=True)(x)
+        x = AvgPool1D(pool_size=(170,))(x)
+        return Dense(50, activation="softmax")(x)
+
+    data = num_sentences_based_chucking(df, NUM_OF_SENTENCE_CHUNK)
+    X_train, X_test, y_train, y_test = train_test_split(data[TEXT_COLUMN_NAME], data[AUTHOR_NAME_COLUMN_NAME], test_size=TEST_PART)
+    inputs = tf.keras.Input(shape=(1,), dtype='string')
+    outputs = forward_pass(sentence_level_preprocess(inputs[0]))
+    model = tf.keras.Model(inputs, outputs)
+    model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True))
     model.compile(loss="categorical_crossentropy", optimizer='adam', metrics=["accuracy"])
     print(model.summary())
     return model
 
+df = merge_datasets()
 
-def sentence_level_model():
-    model = Sequential()
-    model.add(Masking(mask_value=0., input_shape=(MAX_LENGTH, EMBEDDING_SIZE)))
-    model.add(GRU(100, recurrent_dropout=0.2, return_sequences=True))
-    model.add(AvgPool1D(pool_size=(170,)))
-    model.add(Dense(50, activation="softmax"))
-    model.compile(loss="categorical_crossentropy", optimizer='adam', metrics=["accuracy"])
-    print(model.summary())
-    return model
-
-
-def sentence_level():
-    df = merge_datasets(DATA_PATH)
-    (X_train, y_train), (X_test, y_test) = sentence_level_preprocess(df)
-    model = sentence_level_model()
-    model = train_model(model, X_train, y_train, "sentence_level_preprocess")
-    # eval_model(model, X_test, y_test)
-
+sentence_level_pipeline(df)

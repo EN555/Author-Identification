@@ -6,8 +6,7 @@ import gensim.downloader
 import gensim
 import re
 from typing import Optional
-import swifter
-from src.Constants import *
+from src.config.Constants import *
 from sklearn.model_selection import train_test_split
 
 lemmatizer = nltk.stem.WordNetLemmatizer()
@@ -42,26 +41,6 @@ def complex_tranform_word(word: str, embedding_table=None) -> Optional[np.ndarra
     return result
 
 
-def num_sentences_based_chucking(df: pd.DataFrame, chunk_size: int):
-    def create_chunk():
-        temp_row = row.copy()
-        temp_row[TEXT_COLUMN_NAME] = "".join(curr_chunk)
-        rows.append(temp_row)
-        return temp_row
-
-    rows = []
-    for _, row in df.iterrows():
-        sentences = nltk.tokenize.sent_tokenize(row["X"])
-        curr_chunk = []
-        for sentence in sentences:
-            curr_chunk.append(sentence)
-            if len(curr_chunk) == chunk_size:
-                rows.append(create_chunk())
-                curr_chunk = []
-        rows.append(create_chunk())  # add the last one
-    return pd.DataFrame(rows)
-
-
 def preprocess_labels(y: pd.Series) -> np.ndarray:
     y_codes = pd.Categorical(y).codes
     one_hot = tf.keras.utils.to_categorical(
@@ -70,22 +49,14 @@ def preprocess_labels(y: pd.Series) -> np.ndarray:
     return np.expand_dims(one_hot, axis=1)
 
 
-def sentence_level_preprocess(df: pd.DataFrame, embedding_table=None):
-    def helper(X):
-        data = num_sentences_based_chucking(X, NUM_OF_SENTENCE_CHUNK)
-        X_pre = np.zeros((data["y"].size, MAX_LENGTH, 300))
-        for i, text in enumerate(data["X"]):
-            words = nltk.word_tokenize(text)
-            for j, word in enumerate(words):
-                embedding = tranform_word(word, embedding_table)
-                if embedding is not None and j < MAX_LENGTH:
-                    X_pre[i, j] = embedding
-        return X_pre, preprocess_labels(data["y"])
-
-    X_train, X_test, y_train, y_test = train_test_split(df[TEXT_COLUMN_NAME], df[AUTHOR_NAME_COLUMN_NAME],
-                                                        test_size=TEST_PART)
-    return helper(pd.concat([X_train.rename("X"), y_train.rename("y")], axis=1)), \
-           helper(pd.concat([X_test.rename("X"), y_test.rename("y")], axis=1))
+def sentence_level_preprocess(X, embedding_table=None):
+    X_pre = np.zeros((MAX_LENGTH, EMBEDDING_SIZE))
+    words = nltk.word_tokenize(X)
+    for j, word in enumerate(words):
+        embedding = tranform_word(word, embedding_table)
+        if embedding is not None and j < MAX_LENGTH:
+            X_pre[j] = embedding
+    return X_pre
 
 
 def article_level_preprocess(df: pd.DataFrame, embedding_table=None):
@@ -104,3 +75,4 @@ def article_level_preprocess(df: pd.DataFrame, embedding_table=None):
     X_train, X_test, y_train, y_test = train_test_split(df[TEXT_COLUMN_NAME], df[AUTHOR_NAME_COLUMN_NAME],
                                                         test_size=TEST_PART)
     return helper(X_train), helper(X_test), preprocess_labels(y_train), preprocess_labels(y_test)
+

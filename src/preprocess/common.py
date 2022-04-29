@@ -1,8 +1,10 @@
 import os
 import nltk.tokenize
 import pandas as pd
-from src.Constants import *
+from src.config.Constants import *
 from itertools import islice
+
+from src.config.Constants import TEXT_COLUMN_NAME
 
 
 def chunking(df: pd.DataFrame, chunk_size: int = 100) -> pd.DataFrame:
@@ -23,10 +25,10 @@ def chunking(df: pd.DataFrame, chunk_size: int = 100) -> pd.DataFrame:
 
 
 def num_sentences_based_chucking(df: pd.DataFrame, chunk_size: int):
-    def create_chunk(curr_chunk, row):
-        tmp_row = row.copy()
-        tmp_row[TEXT_COLUMN_NAME] = "".join(curr_chunk)
-        return tmp_row.copy()
+    def create_chunk():
+        temp_row = row.copy()
+        temp_row[TEXT_COLUMN_NAME] = "".join(curr_chunk)
+        return temp_row
 
     rows = []
     for _, row in df.iterrows():
@@ -35,21 +37,21 @@ def num_sentences_based_chucking(df: pd.DataFrame, chunk_size: int):
         for sentence in sentences:
             curr_chunk.append(sentence)
             if len(curr_chunk) == chunk_size:
-                rows.append(create_chunk(curr_chunk.copy(), row))
+                rows.append(create_chunk())
                 curr_chunk = []
-        rows.append(create_chunk(curr_chunk, row))  # add the last one
+        rows.append(create_chunk())  # add the last one
     return pd.DataFrame(rows)
 
 
-def remove_low_std_features(x_train,x_test,std_thr=0.3):
+def remove_low_std_features(x_train, x_test, std_thr=0.3):
     keep_indexes = x_train.std() > std_thr
     return x_train.loc[:, keep_indexes], x_test.loc[:, keep_indexes]
 
 
-def remove_too_large_values(x_train,x_test):
+def remove_too_large_values(x_train, x_test):
     x_train[x_train > 2 ** 60] = 2 ** 60
     x_test[x_test > 2 ** 60] = 2 ** 60
-    return x_train,x_test
+    return x_train, x_test
 
 
 def load_data(path: str, number_of_authors: int) -> pd.DataFrame:
@@ -71,7 +73,6 @@ def merge_datasets(data_path: str = "../data/C50") -> pd.DataFrame:
     df_test = load_data(f"{data_path}/C50test", 50)
     df_train = load_data(f"{data_path}/C50train", 50)
     return df_train.append(df_test, ignore_index=True)
-
 
 
 def combine_features(feature_extractors: list, x_train: pd.DataFrame, x_test: pd.DataFrame) -> (
