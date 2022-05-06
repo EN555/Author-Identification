@@ -13,8 +13,8 @@ function InferForm() {
         console.log("infering...");
         setInfering(true);
         try{
-            const res = await infer({"text":text});
-            setResult(res);
+            const res = await infer(JSON.stringify({"text":text}));
+            setResult(res.data.author_name);
         }catch{}
         setInfering(false);
     }
