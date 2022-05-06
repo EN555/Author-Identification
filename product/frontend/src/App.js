@@ -1,35 +1,42 @@
-import React from "react";
-import { Route, Redirect, Switch } from "react-router-dom";
+import { 
+  Route,
+  Redirect,
+  Switch,
+  BrowserRouter as Router
+} from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 import InferForm from './components/inferForm';
 import NotFound from './components/notFound';
 
 function App() {
   console.log("starting app");
   return (
-    <React.Fragment>
+    <>
         {/* <NavBar user={user} /> */}
-        <main className="container">
-          <InferForm />
-          {/* <ToastContainer />
-          <Switch>
-            <Route path="/infer" component={InferForm} />
-            <Route
-              path="/"
-              render={(props) => (
-                <Redirect
-                  to={{
-                    pathname: "/infer",
-                    state: props.location,
-                  }}
-                />)
-              }
-            ></Route>
-            <Route path="/not-found" component={NotFound} />
-            <Redirect to="/not-found" />
-          </Switch> */}
+        <main className="main">
+          <ToastContainer />
+          <Router>
+            <Switch>
+              <Route path="/infer" component={InferForm} />
+              <Route
+                path="/"
+                exact="true"
+                render={(props) => (
+                  <Redirect
+                    to={{
+                      pathname: "/infer",
+                      state: props.location,
+                    }}
+                  />)
+                }
+              ></Route>
+              <Route path="/not-found" component={NotFound} />
+              <Redirect to="/not-found" />
+            </Switch>
+          </Router>
         </main>
-      </React.Fragment>
+      </>
   );
 }
 
