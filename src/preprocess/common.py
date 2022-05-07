@@ -1,10 +1,14 @@
 import os
-import nltk.tokenize
-import pandas as pd
-from src.config.Constants import *
 from itertools import islice
 
-from src.config.Constants import TEXT_COLUMN_NAME
+import nltk.tokenize
+import pandas as pd
+
+from src.config.Constants import (
+    AUTHOR_NAME_COLUMN_NAME,
+    BOOK_NAME_COLUMN_NAME,
+    TEXT_COLUMN_NAME,
+)
 
 
 def chunking(df: pd.DataFrame, chunk_size: int = 100) -> pd.DataFrame:
@@ -15,8 +19,11 @@ def chunking(df: pd.DataFrame, chunk_size: int = 100) -> pd.DataFrame:
     """
     rows = []
     for _, row in df.iterrows():
-        words = row[TEXT_COLUMN_NAME].split(' ')
-        chunks = [' '.join(words[i: i + chunk_size]) for i in range(0, len(words), chunk_size)]
+        words = row[TEXT_COLUMN_NAME].split(" ")
+        chunks = [
+            " ".join(words[i : i + chunk_size])
+            for i in range(0, len(words), chunk_size)
+        ]
         for chunk in chunks:
             tmp_row = row.copy()
             tmp_row[TEXT_COLUMN_NAME] = chunk
@@ -75,10 +82,12 @@ def merge_datasets(data_path: str = "../data/C50") -> pd.DataFrame:
     return df_train.append(df_test, ignore_index=True)
 
 
-def combine_features(feature_extractors: list, x_train: pd.DataFrame, x_test: pd.DataFrame) -> (
-        pd.DataFrame, pd.DataFrame):
+def combine_features(
+    feature_extractors: list, x_train: pd.DataFrame, x_test: pd.DataFrame
+) -> (pd.DataFrame, pd.DataFrame):
     """
-    @param feature_extractors list of feature extractor callback like complex_style_features_extraction
+    @param feature_extractors list of feature extractor
+    callback like complex_style_features_extraction
     @param x_train
     @param x_test
     """
@@ -87,5 +96,7 @@ def combine_features(feature_extractors: list, x_train: pd.DataFrame, x_test: pd
         out_train, out_test = feature_extractor(x_train, x_test)
         train_results.append(out_train)
         test_results.append(out_test)
-    return pd.concat([df.reset_index(drop=True) for df in train_results], axis=1), \
-           pd.concat([df.reset_index(drop=True) for df in test_results], axis=1)
+    return (
+        pd.concat([df.reset_index(drop=True) for df in train_results], axis=1),
+        pd.concat([df.reset_index(drop=True) for df in test_results], axis=1),
+    )

@@ -6,6 +6,12 @@
 pip install -r requiremnets.txt
 ```
 
+```
+pip install -r requiremnets-dev.txt
+make fmt
+make lint
+```
+
 ### Data
 
 download the data from https://drive.google.com/file/d/1UnTLPc0pnxDZUso-ruCu_egOnHHkJ0sh/view?usp=sharing - huge dataset

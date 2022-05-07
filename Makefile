@@ -1,19 +1,21 @@
-.PHONY: notebook docs
-.EXPORT_ALL_VARIABLES:
+fmt:
+	isort -l 79 --profile black src product/backend tests
+	black -l 79 src product/backend tests
+
+lint:
+	isort -l 79 --profile black -c src product/backend tests
+	black -l 79 --check src product/backend tests
+	flake8 src product/backend tests --max-line-length 95 --ignore=E203,E266,W503,E402
+	mypy src product/backend tests --ignore-missing-imports
 
 install: 
-	@echo "Installing..."
 	pip install -r requirments.txt
-
-activate:
-	@echo "Activating virtual environment"
-	source /venv/Scripts/activate
 
 pull_data:
 	poetry run dvc pull
 
 test:
-	pytest
+	pytest tests/unit/ -maxfail=1 --full-trace --cov-report term-missing:skip-covered --cov-fail-under=10 --cov src
 
 clean:
 	find . -type f -name "*.py[co]" -delete
