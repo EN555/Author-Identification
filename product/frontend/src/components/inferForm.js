@@ -1,14 +1,16 @@
-import React,{useState} from 'react';
+import {useState,useEffect} from 'react';
 import { Button,Form,FormGroup,FormControl } from 'react-bootstrap';
-import { infer } from '../services/infer';
+import { getInferencesInputExamples, infer } from '../services/api';
 import CircularProgress from '@mui/material/CircularProgress';
 // import SendIcon from '@mui/icons-material/Send';
 
 
 function InferForm() {
+    const [inferencesExamples,setInferencesExamples] = useState([]);
     const [infering,setInfering] = useState(false);
     const [result,setResult] = useState("");
     const [text,setText] = useState();
+    const [loadingExamples,setLoadingExamples] = useState(false);
     const on_submit = async()=>{
         console.log("infering...");
         setInfering(true);
@@ -18,6 +20,17 @@ function InferForm() {
         }catch{}
         setInfering(false);
     }
+    const featch_examples = async()=>{
+        setLoadingExamples(true);
+        try{
+            const examples = await getInferencesInputExamples();
+            setInferencesExamples(examples["data"]);
+        }catch{}
+        setLoadingExamples(false);
+    }
+    useEffect(()=>{
+        featch_examples();
+    },[]);
     return (
         <div> 
             <h1>Author Idenedication Demo</h1>
@@ -42,6 +55,9 @@ function InferForm() {
                 <h2>Result</h2>
                 <p>predicted label is: {result}</p>
             </div>}
+            {inferencesExamples.map((curr,index)=>(
+                <p key={index}>curr</p>
+            ))}
         </div>
     )
 }
