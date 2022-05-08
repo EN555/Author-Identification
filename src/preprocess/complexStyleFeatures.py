@@ -51,19 +51,22 @@ def characters_n_grams(
     )
 
 
-def pos_n_grams(
-    x_train: pd.DataFrame, x_test: pd.DataFrame, n: int, **kwargs
-) -> (pd.DataFrame, pd.DataFrame):
-    pos_tagger = lambda text: "".join(
+def pos_tagger_helper(text: str) -> str:
+    return "".join(
         [
             PENN2WN.get(pos, wn.NOUN)
             for _, pos in nltk.pos_tag(nltk.word_tokenize(text))
         ]
     )
+
+
+def pos_n_grams(
+    x_train: pd.DataFrame, x_test: pd.DataFrame, n: int, **kwargs
+) -> (pd.DataFrame, pd.DataFrame):
     return bag_of_words(
         x_train,
         x_test,
-        preprocessor=pos_tagger,
+        preprocessor=pos_tagger_helper,
         ngram_range=(1, n),
         analyzer="char",
         **kwargs
@@ -234,7 +237,8 @@ def entropy_over_words_frequencies(x: pd.DataFrame) -> pd.DataFrame:
 def __syllable_count(word: str) -> int:
     """
     count the number of syllable in a word.
-    function from https://github.com/Hassaan-Elahi/Writing-Styles-Classification-Using-Stylometric-Analysis/blob/master/Code/main.py
+    function from
+    https://github.com/Hassaan-Elahi/Writing-Styles-Classification-Using-Stylometric-Analysis/blob/master/Code/main.py
     """
     word = word.lower()
     count = 0

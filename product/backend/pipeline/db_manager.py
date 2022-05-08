@@ -1,11 +1,12 @@
 import datetime
+from typing import Any, Mapping, Dict
 
 import pymongo
 from bson import ObjectId
 
 from product.backend.models.config import Config
 from product.backend.models.exceptions import ResourceNotFound
-from product.backend.models.models import InferResponse, TrainResult
+from product.backend.models.models import TrainResult
 from product.backend.models.singelton import Singleton
 
 
@@ -25,9 +26,10 @@ class MongoManager(metaclass=Singleton):
     def add_inference(self, data: dict):
         self.client.get_collection("inferences").insert_one(data)
 
-    def add_model(self, retrain_result: TrainResult) -> str:
+    def add_model(self, retrain_result: TrainResult, authors_map: Dict[str, str]) -> str:
         data = retrain_result.dict(exclude_none=True)
         data["created_at"] = datetime.datetime.now()
+        data["authors_map"] = authors_map
         result = self.client.get_collection("models").insert_one(data)
         return str(result.inserted_id)
 
@@ -49,10 +51,10 @@ class MongoManager(metaclass=Singleton):
             list(self.client.get_collection("inferences").find())
         )
 
-    def get_model_by_id(self, model_id: str) -> str:
+    def get_model_by_id(self, model_id: str) -> Mapping[str, Any]:
         model_res = self.client.get_collection("models").find_one(
             {"_id": ObjectId(model_id)}
         )
         if not model_res:
             raise ResourceNotFound(f"model with id {model_id} not found")
-        return model_res["model_name"]
+        return model_res

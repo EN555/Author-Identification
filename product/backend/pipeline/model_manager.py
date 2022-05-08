@@ -2,7 +2,7 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Tuple
+from typing import Dict, Tuple
 
 import gensim.downloader
 import numpy as np
@@ -25,8 +25,9 @@ class ModelManager(metaclass=Singleton):
     AUTHORS_MAP = "authors.json"
 
     def __init__(self):
+        logging.info("loading embedding table")
         self.embedding_table = gensim.downloader.load(self.EMBEDDING_NAME)
-
+        logging.info(f"loading model {self.INIT_MODEL}")
         self.model = load_model(self.INIT_MODEL)
         with open(self.AUTHORS_MAP, "r") as file:
             self.author_mapper = json.load(file)
@@ -37,15 +38,16 @@ class ModelManager(metaclass=Singleton):
         pred = np.argmax(pred)
         return self.author_mapper[str(pred)]
 
-    def update_model(self, model_path: str):
+    def update_model(self, model_path: str, new_authors_map: Dict[str, str]):
         if not Path(model_path).is_dir():
             raise ResourceNotFound(f"model {model_path} not found")
         self.model = load_model(model_path)
+        self.author_mapper = new_authors_map
 
     @staticmethod
     def build_new_model(num_classes) -> Sequential:
         new_model = Sequential()
-        new_model.add(Masking(mask_value=0.0, input_shape=(170, 50),))
+        new_model.add(Masking(mask_value=0.0, input_shape=(170, 50), ))
         new_model.add(
             GRU(
                 100,
@@ -64,9 +66,8 @@ class ModelManager(metaclass=Singleton):
         return new_model
 
     def preprocess(
-        self, df: pd.DataFrame, num_classes: int
+            self, df: pd.DataFrame, y_codes: np.ndarray, num_classes: int
     ) -> Tuple[np.ndarray, np.ndarray]:
-        y_codes = pd.Categorical(df["author_name"]).codes
         one_hot = keras.utils.to_categorical(
             y_codes, num_classes=num_classes, dtype="float32"
         )
@@ -81,14 +82,19 @@ class ModelManager(metaclass=Singleton):
         return X, y
 
     def retrain(
-        self, df: pd.DataFrame, model_name: str, train_config: TrainConfig
-    ):
+            self, df: pd.DataFrame, model_name: str, train_config: TrainConfig
+    ) -> Tuple[TrainResult, Dict[str, str]]:
         start_time = time.time()
-        y_diff = set(df["author_name"].unique()).union(
+        labels = set(df["author_name"].unique()).union(
             set(self.author_mapper.values())
         )
-        num_classes = len(y_diff)
-        X, y = self.preprocess(df, num_classes)
+        num_classes = len(labels)
+        new_mapper = {
+            label_name: str(label_code)
+            for label_code, label_name in enumerate(labels)
+        }
+        y_codes = np.array([int(new_mapper[author_name]) for author_name in df["author_name"]])
+        X, y = self.preprocess(df, y_codes, num_classes)
         new_model = self.build_new_model(num_classes)
         new_model.layers[1].set_weights(self.model.layers[0].trainable_weights)
         X_train, X_val, y_train, y_val = train_test_split(
@@ -111,13 +117,13 @@ class ModelManager(metaclass=Singleton):
         )
         train_acc = np.mean(history.history["accuracy"]) * 100
         y_pred = np.argmax(new_model.predict(X_val), axis=-1)
-        test_acc = (
-            np.sum(np.argmax(y_val, axis=-1) == y_pred) / y_pred.size
-        ) * 100
+        test_acc = np.sum(np.argmax(y_val, axis=-1) == y_pred)
+        test_acc = 100 * (test_acc / y_pred.size)
         logging.info("retrain completed")
         new_model.save(model_name)
-        return TrainResult(
+        train_result = TrainResult(
             train_acc=train_acc,
             test_acc=test_acc,
             duration=time.time() - start_time,
         )
+        return train_result, new_mapper

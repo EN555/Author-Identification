@@ -40,7 +40,7 @@ app.add_middleware(
 
 @app.exception_handler(ResourceNotFound)
 def resource_not_found_exception_handler(
-    request: Request, exc: ResourceNotFound
+        request: Request, exc: ResourceNotFound
 ):
     return ORJSONResponse(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -52,8 +52,11 @@ def resource_not_found_exception_handler(
     "/api/model", status_code=status.HTTP_200_OK,
 )
 def update_model(model_id: str):
-    model_path = mongodb_manager.get_model_by_id(model_id)
-    model_manager.update_model(model_path)
+    model_res = mongodb_manager.get_model_by_id(model_id)
+    model_manager.update_model(
+        model_path=model_res["model_name"],
+        new_authors_map=model_res["authors_map"],
+    )
     return {"message": f"model update to {model_id} successfully"}
 
 
@@ -91,14 +94,14 @@ async def retrain(body: RetrainBody):
     batch_size = min(max(dataset_size // 5, 1), 200)
     epochs = int(body.max_time // (batch_size * 0.5))
     train_config = TrainConfig(epochs=epochs, batch_size=batch_size)
-    train_result = model_manager.retrain(df, model_name, train_config)
+    train_result, authors_map = model_manager.retrain(df, model_name, train_config)
     train_result.train_config = train_config
     new_labels_sizes = df["author_name"].value_counts(normalize=True).to_dict()
     train_result.dataset = DatasetMeta(
         size=dataset_size, new_labels_sizes=new_labels_sizes
     )
     train_result.model_name = model_name
-    model_id = mongodb_manager.add_model(train_result)
+    model_id = mongodb_manager.add_model(train_result, authors_map)
     retrain_result = RetrainResponse(
         model_id=model_id, train_result=train_result
     )
