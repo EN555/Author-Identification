@@ -25,10 +25,11 @@ class MongoManager(metaclass=Singleton):
         return client[config.mongo_db_name]
 
     def add_inference(self, data: dict):
+        data["created_at"] = datetime.datetime.now()
         self.client.get_collection("inferences").insert_one(data)
 
     def add_model(
-        self, retrain_result: TrainResult, authors_map: Dict[str, str]
+            self, retrain_result: TrainResult, authors_map: Dict[str, str]
     ) -> str:
         data = retrain_result.dict(exclude_none=True)
         data["created_at"] = datetime.datetime.now()
@@ -54,7 +55,7 @@ class MongoManager(metaclass=Singleton):
 
     def get_inferences(self):
         return self.parse_result(
-            list(self.client.get_collection("inferences").find())
+            list(self.client.get_collection("inferences").find().sort("created_at", -1).limit(100))
         )
 
     def get_model_by_id(self, model_id: str) -> Mapping[str, Any]:
