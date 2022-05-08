@@ -13,7 +13,8 @@ function InferForm() {
     const [text,setText] = useState();
     const [loadingExamples,setLoadingExamples] = useState(false);
     const [currExample,setCurrExample] = useState("");
-
+    console.log(loadingExamples);
+    
     const on_submit = async()=>{
         console.log("infering...");
         setInfering(true);

@@ -1,4 +1,4 @@
-import { Button,Pagination,Table } from 'react-bootstrap';
+import { Button,Table } from 'react-bootstrap';
 import {useEffect, useState} from 'react'
 import InferForm from '../components/inferForm'
 import { getInferences } from '../services/api';
@@ -9,6 +9,8 @@ import { truncate } from '../services/utils';
 export default function InferencePage() {
   const [inferences,setInferences] = useState([]);
   const [loading,setLoading] = useState(false);
+  console.log(loading);
+  
   const fetch_inferences = async()=>{
     setLoading(true);
     try{
