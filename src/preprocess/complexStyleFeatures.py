@@ -14,7 +14,8 @@ def complex_style_features_extraction(
     x_train: pd.DataFrame, x_test: pd.DataFrame
 ) -> (pd.DataFrame, pd.DataFrame):
     """
-    @return: a representation of the data using complex stylistic features: lexicographic diversity and readability
+    @return: a representation of the data using complex
+    stylistic features: lexicographic diversity and readability
     """
 
     def complex_style_features_extraction_helper(

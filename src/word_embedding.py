@@ -1,5 +1,3 @@
-import pickle
-
 import pandas as pd
 import tensorflow as tf
 from keras.layers import GRU, AvgPool1D, Dense, Masking

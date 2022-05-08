@@ -20,7 +20,7 @@ function InferForm() {
     }
     return (
         <div> 
-            <h1>Infer Page</h1>
+            <h1>Author Idenedication Demo</h1>
             <Form>
                 <FormGroup className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Text of Author</Form.Label>

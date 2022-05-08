@@ -1,41 +1,27 @@
-import json
+import datetime
 import logging
-from typing import List
 
-import gensim.downloader
-import numpy as np
 import pandas as pd
 import shortuuid
 from fastapi import BackgroundTasks, FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import ORJSONResponse
-from keras.callbacks import EarlyStopping, ModelCheckpoint
-from keras.layers import GRU, AvgPool1D, Dense, Masking
-from keras.models import Sequential
-from sklearn.model_selection import train_test_split
 from starlette.middleware.cors import CORSMiddleware
-from tensorflow import keras
 
 from product.backend.models.exceptions import ResourceNotFound
 from product.backend.models.models import (
-    DatasetInstance,
+    DatasetMeta,
     InferData,
     InferResponse,
-    ModelConfig,
+    RetrainBody,
     RetrainResponse,
+    TrainConfig,
 )
-from src.config.Constants import EMBEDDING_SIZE, GLOVE_MODEL_NAME, MAX_LENGTH
-from src.preprocess.word_embedding_features import (
-    sentence_level_preprocess,
-)
+from product.backend.pipeline.db_manager import MongoManager
+from product.backend.pipeline.model_manager import ModelManager
 
-embedding_table = gensim.downloader.load(GLOVE_MODEL_NAME)
-
-model = keras.models.load_model(
-    "notebooks/outputs/sentence_level_preprocess-checkpoints"
-)
-with open("authors.json", "r") as file:
-    author_mapper = json.load(file)
+model_manager = ModelManager()
+mongodb_manager = MongoManager()
 
 app = FastAPI(
     title="Infer Service API",
@@ -43,11 +29,9 @@ app = FastAPI(
     version="1.0.0",
 )
 
-origins = ["*"]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -56,7 +40,7 @@ app.add_middleware(
 
 @app.exception_handler(ResourceNotFound)
 def resource_not_found_exception_handler(
-        request: Request, exc: ResourceNotFound
+    request: Request, exc: ResourceNotFound
 ):
     return ORJSONResponse(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -67,75 +51,55 @@ def resource_not_found_exception_handler(
 @app.put(
     "/api/model", status_code=status.HTTP_200_OK,
 )
-def update_model(body: ModelConfig):
-    global model
-    model = keras.models.load_model(body.model_name)
-    return {"message": f"model update to {body.model_name} successfully"}
+def update_model(model_id: str):
+    model_path = mongodb_manager.get_model_by_id(model_id)
+    model_manager.update_model(model_path)
+    return {"message": f"model update to {model_id} successfully"}
 
 
 @app.post(
     "/api/infer", status_code=status.HTTP_200_OK,
 )
-def infer(body: InferData):
-    pre_text = sentence_level_preprocess(body.text, embedding_table)
-    pred = model.predict(np.expand_dims(pre_text, axis=0))
-    pred = np.argmax(pred)
-    return InferResponse(author_name=author_mapper[str(pred)])
+def infer(body: InferData, background_tasks: BackgroundTasks):
+    start_time = datetime.datetime.now()
+    author_name = model_manager.infer(body.text)
+    took_time = datetime.datetime.now() - start_time
+    took_time = int(took_time.total_seconds() * 1000)
+    background_tasks.add_task(
+        mongodb_manager.add_inference,
+        dict(text=body.text, author_name=author_name, took_time=took_time),
+    )
+    return InferResponse(author_name=author_name)
+
+
+@app.get("/api/inferences", status_code=status.HTTP_200_OK)
+def inference_history():
+    return mongodb_manager.get_inferences()
+
+
+@app.get("/api/models", status_code=status.HTTP_200_OK)
+def retrain_history():
+    return mongodb_manager.get_models()
 
 
 @app.post("/api/retrain", status_code=status.HTTP_200_OK)
-async def retrain(body: List[DatasetInstance]):
+async def retrain(body: RetrainBody):
     logging.info("retrain started")
     model_name = f"retrain/sentence-level-{shortuuid.uuid()}"
-    df = pd.DataFrame(jsonable_encoder(body))
-    y_diff = set(df["author_name"].unique()).union(set(author_mapper.values()))
-    y_codes = pd.Categorical(df["author_name"]).codes
-    one_hot = keras.utils.to_categorical(
-        y_codes, num_classes=len(y_diff), dtype="float32"
+    dataset_size = len(body.dataset)
+    df = pd.DataFrame(jsonable_encoder(body.dataset))
+    batch_size = min(max(dataset_size // 5, 1), 200)
+    epochs = int(body.max_time // (batch_size * 0.5))
+    train_config = TrainConfig(epochs=epochs, batch_size=batch_size)
+    train_result = model_manager.retrain(df, model_name, train_config)
+    train_result.train_config = train_config
+    new_labels_sizes = df["author_name"].value_counts(normalize=True).to_dict()
+    train_result.dataset = DatasetMeta(
+        size=dataset_size, new_labels_sizes=new_labels_sizes
     )
-    y = np.expand_dims(one_hot, axis=1)
-    X = np.stack(
-        [
-            sentence_level_preprocess(text, embedding_table)
-            for text in df["text"]
-        ],
-        axis=0,
+    train_result.model_name = model_name
+    model_id = mongodb_manager.add_model(train_result)
+    retrain_result = RetrainResponse(
+        model_id=model_id, train_result=train_result
     )
-    new_model = Sequential()
-    new_model.add(
-        GRU(
-            100,
-            recurrent_dropout=0.2,
-            input_shape=(MAX_LENGTH, 50),
-            return_sequences=True,
-        )
-    )
-    new_model.add(AvgPool1D(pool_size=(170,)))
-    new_model.add(Dense(50 + 1, activation="softmax"))
-    new_model.compile(
-        loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"]
-    )
-    new_model.layers[0].set_weights(model.layers[0].trainable_weights)
-    X_train, X_val, y_train, y_val = train_test_split(
-        X, y, test_size=0.2
-    )
-    model_checkpoint_callback = ModelCheckpoint(
-        filepath=f"{model_name}-checkpoints",
-        save_weights_only=False,
-        monitor="val_accuracy",
-        mode="max",
-        save_best_only=True,
-    )
-    history = new_model.fit(
-        x=X_train,
-        y=y_train,
-        epochs=3,
-        batch_size=100,
-        callbacks=[model_checkpoint_callback],
-    )
-    train_acc = np.mean(history.history["accuracy"])
-    y_pred = np.argmax(new_model.predict(X_val))
-    test_acc = np.sum(np.argmax(y_val, axis=-1) == y_pred)
-    logging.info("retrain completed")
-    model.save(model_name)
-    return RetrainResponse(model_name=model_name, train_accuracy=train_acc, test_accuracy=test_acc)
+    return retrain_result
