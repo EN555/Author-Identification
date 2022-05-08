@@ -3,6 +3,8 @@ import {useEffect, useState} from 'react'
 import InferForm from '../components/inferForm'
 import { getInferences } from '../services/api';
 import { Route } from "react-router-dom";
+import { truncate } from '../services/utils';
+
 
 export default function InferencePage() {
   const [inferences,setInferences] = useState([]);
@@ -34,7 +36,7 @@ export default function InferencePage() {
             <tbody>
               {inferences.map((curr_inference,index) => (
               <tr key={index}>
-                <td>{curr_inference.text}</td>
+                <td>{truncate(curr_inference.text,100)}</td>
                 <td>{curr_inference.author_name}</td>
                 <td>{curr_inference.took_time}</td>
               </tr>

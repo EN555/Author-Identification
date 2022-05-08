@@ -2,7 +2,7 @@ import {useState,useEffect} from 'react';
 import { Button,Form,FormGroup,FormControl } from 'react-bootstrap';
 import { getInferencesInputExamples, infer } from '../services/api';
 import CircularProgress from '@mui/material/CircularProgress';
-import { transform } from 'lodash';
+import { truncate } from '../services/utils';
 // import SendIcon from '@mui/icons-material/Send';
 
 
@@ -13,10 +13,6 @@ function InferForm() {
     const [text,setText] = useState();
     const [loadingExamples,setLoadingExamples] = useState(false);
     const [currExample,setCurrExample] = useState("");
-
-    function truncate(str, n){
-        return (str.length > n) ? `${str.substr(0, n-1)}...` : str;
-      };
 
     const on_submit = async()=>{
         console.log("infering...");
@@ -39,7 +35,7 @@ function InferForm() {
         featch_examples();
     },[]);
     return (
-        <div> 
+        <div style={{marginTop: "1.5rem"}}> 
             <h1>Author Idenedication Demo</h1>
             <Form>
                 <FormGroup className="mb-3" controlId="formBasicEmail">
