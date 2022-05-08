@@ -1,4 +1,5 @@
 import datetime
+import logging
 from typing import Any, Dict, Mapping
 
 import pymongo
@@ -44,9 +45,12 @@ class MongoManager(metaclass=Singleton):
         return result
 
     def get_models(self):
-        return self.parse_result(
-            list(self.client.get_collection("models").find())
-        )
+        result = []
+        for elem in list(self.client.get_collection("models").find()):
+            curr_id = elem.pop("_id")
+            elem.pop("authors_map")
+            result.append(dict(id=str(curr_id), **elem))
+        return result
 
     def get_inferences(self):
         return self.parse_result(
@@ -54,9 +58,13 @@ class MongoManager(metaclass=Singleton):
         )
 
     def get_model_by_id(self, model_id: str) -> Mapping[str, Any]:
-        model_res = self.client.get_collection("models").find_one(
-            {"_id": ObjectId(model_id)}
-        )
-        if not model_res:
-            raise ResourceNotFound(f"model with id {model_id} not found")
+        try:
+            model_res = self.client.get_collection("models").find_one(
+                {"_id": ObjectId(model_id)}
+            )
+            if not model_res:
+                raise ResourceNotFound(f"model with id {model_id} not found")
+        except Exception as e:
+            logging.error(e)
+            raise ResourceNotFound(f"invalid id {model_id}")
         return model_res

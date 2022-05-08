@@ -8,6 +8,20 @@ class Config(BaseSettings):
     mongo_username: str = Field(None, env="MONGO_USER")
     mongo_password: str = Field(None, env="MONGO_PASS")
     mongo_db_name: str = Field("yosef_project", env="MONGO_DB_NAME")
+    output_path: str = Field("product/backend/outputs/", env="OUTPUT_PATH")
+    init_model_path: str = Field(
+        "notebooks/outputs/sentence_level_preprocess-checkpoints",
+        env="INIT_MODEL_PATH",
+    )
+    embedding_name: str = Field("glove-wiki-gigaword-50", env="EMBEDDING_NAME")
+
+    @property
+    def authors_map_path(self):
+        return f"{self.output_path}/authors.json"
+
+    @property
+    def examples_path(self):
+        return f"{self.output_path}/examples.json"
 
     @property
     def mongo_connection_string(self):

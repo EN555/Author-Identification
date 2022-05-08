@@ -13,23 +13,20 @@ from keras.models import Sequential, load_model
 from sklearn.model_selection import train_test_split
 from tensorflow import keras
 
-from product.backend.models.exceptions import ResourceNotFound
+from product.backend.models.config import config
+from product.backend.models.exceptions import ResourceNotFound, ModelPathNotExists
 from product.backend.models.models import TrainConfig, TrainResult
 from product.backend.models.singelton import Singleton
 from src.preprocess.word_embedding_features import sentence_level_preprocess
 
 
 class ModelManager(metaclass=Singleton):
-    INIT_MODEL = "notebooks/outputs/sentence_level_preprocess-checkpoints"
-    EMBEDDING_NAME = "glove-wiki-gigaword-50"
-    AUTHORS_MAP = "authors.json"
-
     def __init__(self):
         logging.info("loading embedding table")
-        self.embedding_table = gensim.downloader.load(self.EMBEDDING_NAME)
-        logging.info(f"loading model {self.INIT_MODEL}")
-        self.model = load_model(self.INIT_MODEL)
-        with open(self.AUTHORS_MAP, "r") as file:
+        self.embedding_table = gensim.downloader.load(config.embedding_name)
+        logging.info(f"loading model {config.init_model_path}")
+        self.model = load_model(config.init_model_path)
+        with open(config.authors_map_path, "r") as file:
             self.author_mapper = json.load(file)
 
     def infer(self, text: str) -> str:
@@ -40,7 +37,7 @@ class ModelManager(metaclass=Singleton):
 
     def update_model(self, model_path: str, new_authors_map: Dict[str, str]):
         if not Path(model_path).is_dir():
-            raise ResourceNotFound(f"model {model_path} not found")
+            raise ModelPathNotExists(f"model {model_path} not found")
         self.model = load_model(model_path)
         self.author_mapper = new_authors_map
 
@@ -103,11 +100,11 @@ class ModelManager(metaclass=Singleton):
             X, y, test_size=train_config.test_size
         )
         model_checkpoint_callback = ModelCheckpoint(
-            filepath=f"{model_name}-checkpoints",
-            save_weights_only=False,
-            monitor="val_accuracy",
-            mode="max",
-            save_best_only=True,
+            filepath=f"{config.output_path}/{model_name}-checkpoints",
+            monitor="loss",
+            verbose=0,
+            mode="auto",
+            save_freq="epoch",
         )
 
         history = new_model.fit(
@@ -116,13 +113,14 @@ class ModelManager(metaclass=Singleton):
             epochs=train_config.epochs,
             batch_size=train_config.batch_size,
             callbacks=[model_checkpoint_callback],
+            verbose=1,
         )
         train_acc = np.mean(history.history["accuracy"]) * 100
         y_pred = np.argmax(new_model.predict(X_val), axis=-1)
         test_acc = np.sum(np.argmax(y_val, axis=-1) == y_pred)
         test_acc = 100 * (test_acc / y_pred.size)
         logging.info("retrain completed")
-        new_model.save(model_name)
+        new_model.save(f"{config.output_path}/{model_name}")
         train_result = TrainResult(
             train_acc=train_acc,
             test_acc=test_acc,

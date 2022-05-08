@@ -5,3 +5,9 @@
   padding: 5rem;
   color: rgb(0, 0, 0);
 }
+
+.selected-row{
+  border-style: solid;
+  border-color: white;
+  border-width: 4px;
+}

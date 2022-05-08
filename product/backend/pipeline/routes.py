@@ -1,5 +1,7 @@
 import datetime
+import json
 import logging
+from typing import List
 
 import pandas as pd
 import shortuuid
@@ -8,6 +10,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import ORJSONResponse
 from starlette.middleware.cors import CORSMiddleware
 
+from product.backend.models.config import config
 from product.backend.models.exceptions import ResourceNotFound
 from product.backend.models.models import (
     DatasetMeta,
@@ -78,8 +81,9 @@ def infer(body: InferData, background_tasks: BackgroundTasks):
 @app.get(
     "/api/examples/inference", status_code=status.HTTP_200_OK,
 )
-def inferences_examples():
-    return
+def inferences_examples() -> List[str]:
+    with open(config.examples_path, "r") as file:
+        return json.load(file)
 
 
 @app.get("/api/inferences", status_code=status.HTTP_200_OK)
@@ -95,7 +99,7 @@ def retrain_history():
 @app.post("/api/retrain", status_code=status.HTTP_200_OK)
 async def retrain(body: RetrainBody):
     logging.info("retrain started")
-    model_name = f"retrain/sentence-level-{shortuuid.uuid()}"
+    model_name = f"sentence-level-{shortuuid.uuid()}"
     dataset_size = len(body.dataset)
     df = pd.DataFrame(jsonable_encoder(body.dataset))
     batch_size = min(max(dataset_size // 5, 1), 200)
