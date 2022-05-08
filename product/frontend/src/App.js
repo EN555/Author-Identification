@@ -7,19 +7,22 @@ import {
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import NotFound from './pages/notFound';
-import RetrainPage from "./pages/retrainPage";
+import ModelDashboardPage from "./pages/modelDashboardPage";
 import InferencePage from "./pages/inferencePage";
+import RetrainScreen from "./pages/retrainScreen";
+import CustomNavbar from "./components/navbar";
 
 function App() {
   console.log("starting app");
   return (
     <>
-        {/* <NavBar user={user} /> */}
+        <CustomNavbar />
         <main className="main">
           <ToastContainer />
           <Router>
             <Switch>
-            <Route path="/retrain" component={RetrainPage} />
+              <Route path="/retrain" component={RetrainScreen} />
+              <Route path="/models" component={ModelDashboardPage}/>
               <Route path="/infer" component={InferencePage} />
               <Route
                 path="/"

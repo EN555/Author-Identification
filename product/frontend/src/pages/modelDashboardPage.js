@@ -1,10 +1,10 @@
 import { useEffect,useState } from 'react'
 import { getModels, retrain,updateModels } from '../services/api';
 import Table from 'react-bootstrap/Table'
-import { Button,Modal } from 'react-bootstrap';
+import { Button,Modal,Form } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 
-export default function RetrainPage() {
+export default function ModelDashboardPage() {
   const [trainedModels,setTrainedModels] = useState([]);
   const [selectedModel,setSelectedModel] = useState();
   const [loading,setLoading] = useState(false);
@@ -69,6 +69,7 @@ export default function RetrainPage() {
       </Modal.Footer>
     </Modal>
       {trainedModels.length === 0 ? "no models to show..." : (
+        <>
           <Table stripped bordered hover variant="dark" size="sm">
           <thead>
             <tr>
@@ -93,10 +94,11 @@ export default function RetrainPage() {
             ))}
           </tbody>
           </Table>
+          <Button variant="primary" onClick={()=>setShowModal(true)} disabled={!selectedModel}>Retrain Selected</Button>
+        <Button variant="secondary" style={{width: "5rem",marginLeft:"1rem"}} onClick={()=>setSelectedModel(null)} disabled={!selectedModel}>Clear</Button>
+          </>
         )
         }
-    <Button variant="primary" onClick={()=>setShowModal(true)} disabled={!selectedModel}>Retrain Selected</Button>
-    <Button variant="secondary" style={{width: "5rem",marginLeft:"1rem"}} onClick={()=>setSelectedModel(null)} disabled={!selectedModel}>Clear</Button>
     </div>
   )
 }

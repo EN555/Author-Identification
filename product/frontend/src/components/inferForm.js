@@ -2,6 +2,7 @@ import {useState,useEffect} from 'react';
 import { Button,Form,FormGroup,FormControl } from 'react-bootstrap';
 import { getInferencesInputExamples, infer } from '../services/api';
 import CircularProgress from '@mui/material/CircularProgress';
+import { transform } from 'lodash';
 // import SendIcon from '@mui/icons-material/Send';
 
 
@@ -11,6 +12,12 @@ function InferForm() {
     const [result,setResult] = useState("");
     const [text,setText] = useState();
     const [loadingExamples,setLoadingExamples] = useState(false);
+    const [currExample,setCurrExample] = useState("");
+
+    function truncate(str, n){
+        return (str.length > n) ? `${str.substr(0, n-1)}...` : str;
+      };
+
     const on_submit = async()=>{
         console.log("infering...");
         setInfering(true);
@@ -36,8 +43,21 @@ function InferForm() {
             <h1>Author Idenedication Demo</h1>
             <Form>
                 <FormGroup className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Select Norm Type</Form.Label>
+                    <Form.Control
+                        as="select"
+                        value={currExample}
+                        onChange={e => {
+                            setText(e.target.value);
+                            setCurrExample(e.target.value);
+                        }}
+                    >
+                        {inferencesExamples.map((example, index)=>(
+                            <option key={index} value={example}>{truncate(example,20)}</option>
+                        ))}
+                    </Form.Control>
                     <Form.Label>Text of Author</Form.Label>
-                    <FormControl as="textarea" rows="3" type="text"
+                    <FormControl as="textarea" rows="5" type="text"
                         placeholder="Enter text"  
                         value={text} onChange={(e) => setText(e.target.value)}/>
                 </FormGroup>
@@ -55,9 +75,6 @@ function InferForm() {
                 <h2>Result</h2>
                 <p>predicted label is: {result}</p>
             </div>}
-            {inferencesExamples.map((curr,index)=>(
-                <p key={index}>curr</p>
-            ))}
         </div>
     )
 }
