@@ -39,7 +39,7 @@ function InferForm() {
             <h1>Author Idenedication Demo</h1>
             <Form>
                 <FormGroup className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Select Norm Type</Form.Label>
+                    <Form.Label>Select Input Example</Form.Label>
                     <Form.Control
                         as="select"
                         value={currExample}
@@ -52,25 +52,22 @@ function InferForm() {
                             <option key={index} value={example}>{truncate(example,20)}</option>
                         ))}
                     </Form.Control>
-                    <Form.Label>Text of Author</Form.Label>
+                    <Form.Label style={{marginTop: "1rem"}}>Text of Author</Form.Label>
                     <FormControl as="textarea" rows="5" type="text"
                         placeholder="Enter text"  
                         value={text} onChange={(e) => setText(e.target.value)}/>
                 </FormGroup>
-                <div style={{paddingLeft:"1rem",display:"inline-block",justifyContent:"center"}}>
-                    {infering && <CircularProgress size={30}/>}
-                    <div style={{paddingLeft: "1rem",display: "inline-block"}}>
+                <div style={{justifyContent:"center",display:"flex"}}>
+                    {<p style={{display:"inline-block",flexGrow:100,fontWeight:"bold"}}>{result && `Predicted Label: ${result}`}</p>}
+                    <div style={{paddingRight: "1rem",display: "inline-block"}}>
                         <Button variant="primary" onClick={!infering ? on_submit : null}>
                         {infering ? 'Loading...' : 'Send'}
                         </Button>
+                    {infering && <CircularProgress size={30}/>}
                     </div>
 
                 </div>
             </Form>
-            {result && <div style={{marginTop: "1rem"}}>
-                <h2>Result</h2>
-                <p>predicted label is: {result}</p>
-            </div>}
         </div>
     )
 }

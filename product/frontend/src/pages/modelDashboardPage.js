@@ -1,25 +1,16 @@
 import { useEffect,useState } from 'react'
-import { getModels, retrain,updateModels } from '../services/api';
+import { getModels,updateModels } from '../services/api';
 import Table from 'react-bootstrap/Table'
-import { Button,Modal,Form } from 'react-bootstrap';
+import { Button,Modal } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 
 export default function ModelDashboardPage() {
   const [trainedModels,setTrainedModels] = useState([]);
   const [selectedModel,setSelectedModel] = useState();
   const [loading,setLoading] = useState(false);
-  const [retrainning,setRetrainning] = useState(false);
   const [showModal,setShowModal] = useState(false);
-
-  const retrainHandler = async()=>{
-    setRetrainning(true);
-    try{
-      await retrain();
-    }catch(e){
-      console.log(e);
-    }
-    setRetrainning(false);
-  }
+  console.log(loading);
+  
   const updateModelHandler = async()=>{
     setShowModal(false);
     setLoading(true);
