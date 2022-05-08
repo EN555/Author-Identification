@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Callable, Tuple
 
 import nltk
 import numpy as np
@@ -43,7 +43,7 @@ def stem_words(text: str) -> List[str]:
 
 def bag_of_words(
     x_train: pd.DataFrame, x_test: pd.DataFrame, **kwargs
-) -> (pd.DataFrame, pd.DataFrame):
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     @return: bag of words representation for the give data
     """
@@ -114,8 +114,8 @@ def aggregative_word2vec(
     x_test: pd.DataFrame,
     word2vec_path: str,
     embedding_size: int,
-    aggregative_function: callable,
-) -> (pd.DataFrame, pd.DataFrame):
+    aggregative_function: Callable,
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     @return: each text is represented as a single vector of size 'embedding_size',
     attained by applying an aggregative function to all of the word2vec vectors

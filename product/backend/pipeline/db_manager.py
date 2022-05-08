@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Mapping, Dict
+from typing import Any, Dict, Mapping
 
 import pymongo
 from bson import ObjectId
@@ -26,7 +26,9 @@ class MongoManager(metaclass=Singleton):
     def add_inference(self, data: dict):
         self.client.get_collection("inferences").insert_one(data)
 
-    def add_model(self, retrain_result: TrainResult, authors_map: Dict[str, str]) -> str:
+    def add_model(
+        self, retrain_result: TrainResult, authors_map: Dict[str, str]
+    ) -> str:
         data = retrain_result.dict(exclude_none=True)
         data["created_at"] = datetime.datetime.now()
         data["authors_map"] = authors_map

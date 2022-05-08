@@ -47,7 +47,7 @@ class ModelManager(metaclass=Singleton):
     @staticmethod
     def build_new_model(num_classes) -> Sequential:
         new_model = Sequential()
-        new_model.add(Masking(mask_value=0.0, input_shape=(170, 50), ))
+        new_model.add(Masking(mask_value=0.0, input_shape=(170, 50),))
         new_model.add(
             GRU(
                 100,
@@ -66,7 +66,7 @@ class ModelManager(metaclass=Singleton):
         return new_model
 
     def preprocess(
-            self, df: pd.DataFrame, y_codes: np.ndarray, num_classes: int
+        self, df: pd.DataFrame, y_codes: np.ndarray, num_classes: int
     ) -> Tuple[np.ndarray, np.ndarray]:
         one_hot = keras.utils.to_categorical(
             y_codes, num_classes=num_classes, dtype="float32"
@@ -82,7 +82,7 @@ class ModelManager(metaclass=Singleton):
         return X, y
 
     def retrain(
-            self, df: pd.DataFrame, model_name: str, train_config: TrainConfig
+        self, df: pd.DataFrame, model_name: str, train_config: TrainConfig
     ) -> Tuple[TrainResult, Dict[str, str]]:
         start_time = time.time()
         labels = set(df["author_name"].unique()).union(
@@ -93,7 +93,9 @@ class ModelManager(metaclass=Singleton):
             label_name: str(label_code)
             for label_code, label_name in enumerate(labels)
         }
-        y_codes = np.array([int(new_mapper[author_name]) for author_name in df["author_name"]])
+        y_codes = np.array(
+            [int(new_mapper[author_name]) for author_name in df["author_name"]]
+        )
         X, y = self.preprocess(df, y_codes, num_classes)
         new_model = self.build_new_model(num_classes)
         new_model.layers[1].set_weights(self.model.layers[0].trainable_weights)

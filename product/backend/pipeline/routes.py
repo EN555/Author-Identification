@@ -40,7 +40,7 @@ app.add_middleware(
 
 @app.exception_handler(ResourceNotFound)
 def resource_not_found_exception_handler(
-        request: Request, exc: ResourceNotFound
+    request: Request, exc: ResourceNotFound
 ):
     return ORJSONResponse(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -75,6 +75,13 @@ def infer(body: InferData, background_tasks: BackgroundTasks):
     return InferResponse(author_name=author_name)
 
 
+@app.get(
+    "/api/examples/inference", status_code=status.HTTP_200_OK,
+)
+def inferences_examples():
+    return
+
+
 @app.get("/api/inferences", status_code=status.HTTP_200_OK)
 def inference_history():
     return mongodb_manager.get_inferences()
@@ -94,7 +101,9 @@ async def retrain(body: RetrainBody):
     batch_size = min(max(dataset_size // 5, 1), 200)
     epochs = int(body.max_time // (batch_size * 0.5))
     train_config = TrainConfig(epochs=epochs, batch_size=batch_size)
-    train_result, authors_map = model_manager.retrain(df, model_name, train_config)
+    train_result, authors_map = model_manager.retrain(
+        df, model_name, train_config
+    )
     train_result.train_config = train_config
     new_labels_sizes = df["author_name"].value_counts(normalize=True).to_dict()
     train_result.dataset = DatasetMeta(

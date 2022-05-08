@@ -1,4 +1,5 @@
 from collections import Counter
+from typing import Tuple
 
 import nltk
 import numpy as np
@@ -45,7 +46,7 @@ def complex_style_features_extraction(
 
 def characters_n_grams(
     x_train: pd.DataFrame, x_test: pd.DataFrame, n: int, **kwargs
-) -> (pd.DataFrame, pd.DataFrame):
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
     return bag_of_words(
         x_train, x_test, analyzer="char", ngram_range=(n, n), **kwargs
     )
