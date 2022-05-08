@@ -6,9 +6,9 @@ import {
 } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import InferForm from './components/inferForm';
-import NotFound from './components/notFound';
-import retrainPage from "./components/retrainPage";
+import NotFound from './pages/notFound';
+import RetrainPage from "./pages/retrainPage";
+import InferencePage from "./pages/inferencePage";
 
 function App() {
   console.log("starting app");
@@ -19,8 +19,8 @@ function App() {
           <ToastContainer />
           <Router>
             <Switch>
-            <Route path="/retrain" component={retrainPage} />
-              <Route path="/infer" component={InferForm} />
+            <Route path="/retrain" component={RetrainPage} />
+              <Route path="/infer" component={InferencePage} />
               <Route
                 path="/"
                 exact="true"

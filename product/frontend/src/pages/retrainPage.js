@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function retrainPage() {
+export default function RetrainPage() {
 
   return (
     <div>
