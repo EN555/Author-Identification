@@ -22,7 +22,9 @@ from src.preprocess.word_embedding_features import sentence_level_preprocess
 DATA_PATH = "../data/C50"
 
 
-def article_level_pipeline(df: pd.DataFrame):
+def article_level_pipeline(
+    df: pd.DataFrame, model_name: str, labels_number: int, epochs=10
+):
     def forward_pass(x):
         x = Masking(
             mask_value=0.0,
@@ -30,7 +32,7 @@ def article_level_pipeline(df: pd.DataFrame):
         )(x)
         x = GRU(100, recurrent_dropout=0.2, return_sequences=True)(x)
         x = AvgPool1D(pool_size=(MAX_NUMBER_OF_SENTENCE,))(x)
-        return Dense(50, activation="softmax")(x)
+        return Dense(labels_number, activation="softmax")(x)
 
     X_train, X_test, y_train, y_test = train_test_split(
         df[TEXT_COLUMN_NAME], df[AUTHOR_NAME_COLUMN_NAME], test_size=TEST_PART
@@ -47,10 +49,10 @@ def article_level_pipeline(df: pd.DataFrame):
     )
 
     callback = tf.keras.callbacks.EarlyStopping(
-        monitor="val_loss", patience=30
+        monitor="val_loss", patience=epochs // 10
     )
     model_checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-        filepath="./article-level-checkpoints",
+        filepath=f"{model_name}-checkpoint",
         save_weights_only=False,
         monitor="val_accuracy",
         mode="max",
@@ -59,15 +61,14 @@ def article_level_pipeline(df: pd.DataFrame):
     history = model.fit(
         x=X_train,
         y=y_train,
-        epochs=30000,
+        epochs=epochs,
         shuffle=True,
-        batch_size=200,
+        batch_size=max(y_train.size // 10, 1),
         validation_data=(X_val, y_val),
         callbacks=[callback, model_checkpoint_callback],
     )
-    with open("article-level-history", "w") as file:
-        pickle.dump(history, file)
-    model.save("article-level")
+    model.save(model_name)
+    return model, history
 
 
 def sentence_level_pipeline(df: pd.DataFrame):

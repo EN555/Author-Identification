@@ -1,2 +1,6 @@
 class ResourceNotFound(Exception):
     ...
+
+
+class InvalidContentType(Exception):
+    ...

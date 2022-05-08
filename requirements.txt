@@ -20,3 +20,6 @@ keras~=2.8.0
 spacy~=3.2.3
 transformers~=4.17.0
 orjson~=3.6.8
+shortuuid~=1.0.8
+starlette~=0.16.0
+pymongo~=4.1.1
