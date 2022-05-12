@@ -81,6 +81,7 @@ class ModelManager(metaclass=Singleton):
     def retrain(
         self, df: pd.DataFrame, model_name: str, train_config: TrainConfig
     ) -> Tuple[TrainResult, Dict[str, str]]:
+        Path(config.output_path).mkdir(parents=True, exist_ok=True)
         start_time = time.time()
         labels = set(df["author_name"].unique()).union(
             set(self.author_mapper.values())

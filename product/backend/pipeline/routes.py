@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+from pathlib import Path
 from typing import List
 
 import pandas as pd
@@ -57,7 +58,7 @@ def resource_not_found_exception_handler(
 def update_model(model_id: str):
     model_res = mongodb_manager.get_model_by_id(model_id)
     model_manager.update_model(
-        model_path=model_res["model_name"],
+        model_path=Path(config.output_path) / model_res["model_name"],
         new_authors_map=model_res["authors_map"],
     )
     return {"message": f"model update to {model_id} successfully"}
