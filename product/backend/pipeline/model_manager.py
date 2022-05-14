@@ -14,7 +14,7 @@ from sklearn.model_selection import train_test_split
 from tensorflow import keras
 
 from product.backend.models.config import config
-from product.backend.models.exceptions import ResourceNotFound, ModelPathNotExists
+from product.backend.models.exceptions import ModelPathNotExists
 from product.backend.models.models import TrainConfig, TrainResult
 from product.backend.models.singelton import Singleton
 from src.preprocess.word_embedding_features import sentence_level_preprocess
@@ -62,7 +62,7 @@ class ModelManager(metaclass=Singleton):
         )
         return new_model
 
-    def preprocess(
+    def _preprocess(
         self, df: pd.DataFrame, y_codes: np.ndarray, num_classes: int
     ) -> Tuple[np.ndarray, np.ndarray]:
         one_hot = keras.utils.to_categorical(
@@ -94,7 +94,7 @@ class ModelManager(metaclass=Singleton):
         y_codes = np.array(
             [int(new_mapper[author_name]) for author_name in df["author_name"]]
         )
-        X, y = self.preprocess(df, y_codes, num_classes)
+        X, y = self._preprocess(df, y_codes, num_classes)
         new_model = self.build_new_model(num_classes)
         new_model.layers[1].set_weights(self.model.layers[0].trainable_weights)
         X_train, X_val, y_train, y_val = train_test_split(

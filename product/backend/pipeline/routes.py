@@ -44,7 +44,7 @@ app.add_middleware(
 
 @app.exception_handler(ResourceNotFound)
 def resource_not_found_exception_handler(
-    request: Request, exc: ResourceNotFound
+        request: Request, exc: ResourceNotFound
 ):
     return ORJSONResponse(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -115,6 +115,7 @@ async def retrain(body: RetrainBody):
         size=dataset_size, new_labels_sizes=new_labels_sizes
     )
     train_result.model_name = model_name
+    authors_map = {value: key for key, value in authors_map.items()}
     model_id = mongodb_manager.add_model(train_result, authors_map)
     retrain_result = RetrainResponse(
         model_id=model_id, train_result=train_result
