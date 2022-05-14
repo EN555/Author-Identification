@@ -8,7 +8,7 @@ class Config(BaseSettings):
     mongo_username: str = Field(None, env="MONGO_USER")
     mongo_password: str = Field(None, env="MONGO_PASS")
     mongo_db_name: str = Field("yosef_project", env="MONGO_DB_NAME")
-    output_path: str = Field("product/backend/outputs/", env="OUTPUT_PATH")
+    output_path: str = Field("product/backend/outputs/retrain", env="OUTPUT_PATH")
     init_model_path: str = Field(
         "notebooks/outputs/sentence_level_preprocess-checkpoints",
         env="INIT_MODEL_PATH",
