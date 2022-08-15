@@ -62,4 +62,3 @@ MONGO_DB_NAME="db_name"
 ```
 python product/backend/main.py
 ```
-
