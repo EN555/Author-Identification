@@ -27,3 +27,4 @@ brunets measure: https://link.springer.com/content/pdf/bbm%3A978-0-230-51180-4%2
 zipf's law: https://he.wikipedia.org/wiki/%D7%97%D7%95%D7%A7_%D7%96%D7%99%D7%A3
 flesch reading ease and lesch-kincaid grade level: https://readable.com/readability/flesch-reading-ease-flesch-kincaid-grade-level/
 gunning fog index: https://en.wikipedia.org/wiki/Gunning_fog_index
+
