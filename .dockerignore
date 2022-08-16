@@ -1,0 +1,16 @@
+venv/
+.dvc/
+.git/
+notebooks/
+articles/
+.idea/
+data/*
+.ipynb_checkpoints/
+__pycache__/
+C50/
+*.csv
+reports/
+*-history*
+*-checkpoints*/
+notebooks/outputs/
+retrain/

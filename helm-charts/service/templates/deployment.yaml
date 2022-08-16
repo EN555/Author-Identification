@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "service.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "service.name" . }}
+    helm.sh/chart: {{ include "service.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+{{- if not .Values.hpa.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: "0%"
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "service.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "service.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http-container
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: AF_ENV
+              value: {{ .Values.afEnv }}
+            - name: AF_SERVICE_NAME
+              value: {{ .Values.ServiceName }}
+            - name: PYCLEF_ENV
+              value: {{ .Values.pyclefEnv }}
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            {{- if hasKey .Values.livenessProbe "httpGet" }}
+            httpGet:
+              path: {{ .Values.livenessProbe.httpGet.path }}
+              port: 8080
+            {{ else }}
+            tcpSocket:
+              port: 8080
+            {{- end }}
+          readinessProbe:
+            {{- if hasKey .Values.readinessProbe "httpGet" }}
+            httpGet:
+              path: {{ .Values.readinessProbe.httpGet.path }}
+              port: 8080
+            {{ else }}
+            tcpSocket:
+              port: 8080
+            {{- end }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

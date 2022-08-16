@@ -20,3 +20,4 @@ make lint
 
 
 `pre-commit install`
+https://minikube.sigs.k8s.io/docs/start/

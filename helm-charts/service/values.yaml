@@ -1,0 +1,59 @@
+
+replicaCount: 1
+
+image:
+  repository: "yd5463/author-identifier"
+  tag: stable
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 80
+
+hpa:
+  enabled: false
+
+ingress:
+  enabled: false
+  annotations:
+    kubernetes.io/ingress.class: nginx-internal
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  paths: []
+  hosts:
+    - chart-example.local
+  tls: []
+
+resources:
+   limits:
+    cpu: 100m
+    memory: 128Mi
+   requests:
+    cpu: 100m
+    memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+tests:
+  enabled: false
+
+livenessProbe:
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 1
+  successThreshold: 1
+  failureThreshold: 3
+
+readinessProbe:
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 1
+  successThreshold: 3
+  failureThreshold: 3
+

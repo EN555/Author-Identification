@@ -21,3 +21,14 @@ clean:
 	find . -type f -name "*.py[co]" -delete
 	find . -type d -name "__pycache__" -delete
 	rm -rf .pytest_cache
+
+build:
+	docker build -t yd5463/author-identifier:frontend ./product/frontend
+	docker build -t yd5463/author-identifier:backend -f ./product/backend/Dockerfile .
+deploy:
+	docker push yd5463/author-identifier:frontend
+	docker push yd5463/author-identifier:backend
+	helm template ./helm-charts/service/ --set image.tag="frontend" > out.yaml
+	kubectl apply -f out.yaml
+	helm template ./helm-charts/service/ --set image.tag="backend" > out.yaml
+	kubectl apply -f out.yaml
