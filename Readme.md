@@ -1,5 +1,11 @@
 # Author Identification
 
+## Table of content
+
+- [Installation](#installation)
+- [Project Goal](#project-goal)
+- [Data](#data)
+
 ## Installation
 
 ```cmd
