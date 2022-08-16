@@ -1,7 +1,7 @@
 # Author Identification
 
 ```diff
-- This project was in ccoperation with Nir Son, Eviatar Nachshoni, Yosef Danan, under supervision of Prof. Lee-Ad Gottlieb
+- This project was in cooperation with Nir Son, Eviatar Nachshoni, Yosef Danan, under supervision of Prof. Lee-Ad Gottlieb
 ```
 ## Table of content
 
