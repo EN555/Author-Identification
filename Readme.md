@@ -1,5 +1,8 @@
 # Author Identification
 
+```diff
+- This project was in ccoperation with Nir Son, Eviatar Nachshoni, Yosef Danan, under supervision of Prof. Lee-Ad Gottlieb
+```
 ## Table of content
 
 - [Installation](#installation)
