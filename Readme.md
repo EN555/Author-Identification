@@ -15,8 +15,6 @@ make lint
 
 The problem of Author identification is about the identification of  author of a tested document from a group of potential authors.
 Our research focuses on try distinguish between different authors when they are about similar topics. 
-![image](https://user-images.githubusercontent.com/61500507/184867334-a7e60ffd-a1c8-423b-9bd2-2450aa84c121.png)
-
 
 ## Data
 we use the C50 data set1 which compose of 2,500 texts by 50 different authors (50 for each) for train, and the same for test. The texts are not particularly long - the average length is around 500 words. 
