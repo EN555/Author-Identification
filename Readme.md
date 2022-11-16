@@ -26,8 +26,8 @@ make lint
 
 The problem of Author identification is about the identification of  author of a tested document from a group of potential authors.
 Our research focuses on try distinguish between different authors when they are about similar topics. 
+<a href="url"><img src="https://user-images.githubusercontent.com/61500507/202146367-b53f777a-40fd-4108-aa1c-3e2c291d979d.png" height="200" width="600" ></a>
 
-![image](https://user-images.githubusercontent.com/61500507/202146367-b53f777a-40fd-4108-aa1c-3e2c291d979d.png)
 
 ## Data
 we use the C50 data set1 which compose of 2,500 texts by 50 different authors (50 for each) for train, and the same for test. The texts are not particularly long - the average length is around 500 words. 
@@ -41,7 +41,7 @@ we use the C50 data set1 which compose of 2,500 texts by 50 different authors (5
 
 `pre-commit install`
 
-# Task Challenge
+## Task Challenge
 
 In the C50 data set, the data set we use in this project, there are 50 different
 authors. We tried to approach the problem as a classic classification problem -
@@ -51,7 +51,7 @@ stylistic features and content features, and with a variety of machine learning
 models.
 <a href="url"><img src="https://user-images.githubusercontent.com/61500507/202150225-fda584c2-63da-46b0-a8c6-2dd5eb500bce.png" height="300" width="500" ></a>
 
-# Baseline Model
+## Baseline Model
 We first distinct betweent two fundemental feartures: 
 1. Pure style methods: 
 	we distinguish between two categories of 	features:
