@@ -43,8 +43,7 @@ we use the C50 data set1 which compose of 2,500 texts by 50 different authors (5
 
 ## Task Challenge
 
-In the C50 data set, the data set we use in this project, there are 50 different
-authors. We tried to approach the problem as a classic classification problem -
+We tried to approach the problem as a classic classification problem -
 that it, try and predict the most likely author of an anonymous text (only) out
 of the 50 authors in the original set. We tried to solve this problem using both
 stylistic features and content features, and with a variety of machine learning
