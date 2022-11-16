@@ -50,18 +50,12 @@ stylistic features and content features, and with a variety of machine learning
 models.
 <a href="url"><img src="https://user-images.githubusercontent.com/61500507/202150225-fda584c2-63da-46b0-a8c6-2dd5eb500bce.png" height="300" width="500" ></a>
 
-## Baseline Model
+## Baseline Models
 We first distinct betweent two fundemental feartures: 
-1. Pure style methods: 
-	we distinguish between two categories of 	features:
-		1.1. simple features:
-			 we extract features like: POS count, avg word 				 length, punctuation mark count, stop words           				count	and etc.
-		1.2 complex features:
-			 we extract features like: chrachter n-grams, pos 			 patters, n-grams, lexicographic diversity, 						 
-			 readabillity measures and etc.
-2. Content&Style methods:
-	We check different type of deep learning methods, we 	use GRU model with different type of text and word 	encoding (sentence level, word level). 
-
+1. Style: 
+We used the baseline from Stanford with three style features (average sentence length, average word length, and hapax disLegemena (lexicographic diversity)) and Xgboost model for training. This yielded an accuracy of 0.12	
+2. Content:
+we stated with a relatively simple try - bag of words representation with Naive Bayes. This model yielded an accuracy of 0.58
 
 # Our Approach 
 We first encoding each sentence using Glove50, then we use average pooling over all the sentence,
